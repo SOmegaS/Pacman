@@ -14,11 +14,11 @@ def main():
     x_mat = 1  # x pacman-а в массиве
     y_mat = 1  # y pacman-а в массиве
     score = 0  # Счет
-    speed = len_side_cell  # Скорость pacman-а
+    speed = 2  # Скорость pacman-а
     run = True  # Индикатор состояния игры
     # 0 - пусто 1 - пакмен 2 - призрак 3 - стена      5 - зерно
 
-    FPS = 5  # Кадры в секунду
+    FPS = 120  # Кадры в секунду
     clock = pygame.time.Clock()
     area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
             [3, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 3],
@@ -75,6 +75,8 @@ def main():
             print(elem, end=',')
         print()
     pygame.font.SysFont('arial', 36)  # Установка шрифта
+    vector = [False, False, False, False]  # Вектор движения: влево, вправо, вверх, вниз
+    tick = 0  # Номер тика
     # Главный цикл
     while run:
         clock.tick(FPS)
@@ -83,36 +85,47 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
 
-        # Отлавливание нажатий клавиш
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a]:  # Влево
-            if area[y_mat][x_mat - 1] != 3:  # Коллизия со стенками
-                x_mat -= 1
-                x -= speed
-            if area[y_mat][x_mat] == 5:  # Поглощение зерен
-                score += 5
-                area[y_mat][x_mat] = 0
-        if keys[pygame.K_d]:  # Вправо
-            if area[y_mat][x_mat + 1] != 3:  # Коллизия со стенками
-                x_mat += 1
-                x += speed
-            if area[y_mat][x_mat] == 5:  # Поглощение зерен
-                score += 5
-                area[y_mat][x_mat] = 0
-        if keys[pygame.K_w]:  # Вверх
-            if area[y_mat - 1][x_mat] != 3:  # Коллизия со стенками
-                y_mat -= 1
-                y -= speed
-            if area[y_mat][x_mat] == 5:  # Поглощение зерен
-                score += 5
-                area[y_mat][x_mat] = 0
-        if keys[pygame.K_s]:  # Вниз
-            if area[y_mat + 1][x_mat] != 3:  # Коллизия со стенками
-                y_mat += 1
-                y += speed
-            if area[y_mat][x_mat] == 5:  # Поглощение зерен
-                score += 5
-                area[y_mat][x_mat] = 0
+        if tick == 0:
+            vector = [False, False, False, False]
+            # Отлавливание нажатий клавиш
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_a]:  # Влево
+                if area[y_mat][x_mat - 1] != 3:  # Коллизия со стенками
+                    x_mat -= 1
+                    vector[0] = True
+                if area[y_mat][x_mat] == 5:  # Поглощение зерен
+                    score += 5
+                    area[y_mat][x_mat] = 0
+            if keys[pygame.K_d]:  # Вправо
+                if area[y_mat][x_mat + 1] != 3:  # Коллизия со стенками
+                    x_mat += 1
+                    vector[1] = True
+                if area[y_mat][x_mat] == 5:  # Поглощение зерен
+                    score += 5
+                    area[y_mat][x_mat] = 0
+            if keys[pygame.K_w]:  # Вверх
+                if area[y_mat - 1][x_mat] != 3:  # Коллизия со стенками
+                    y_mat -= 1
+                    vector[2] = True
+                if area[y_mat][x_mat] == 5:  # Поглощение зерен
+                    score += 5
+                    area[y_mat][x_mat] = 0
+            if keys[pygame.K_s]:  # Вниз
+                if area[y_mat + 1][x_mat] != 3:  # Коллизия со стенками
+                    y_mat += 1
+                    vector[3] = True
+                if area[y_mat][x_mat] == 5:  # Поглощение зерен
+                    score += 5
+                    area[y_mat][x_mat] = 0
+        if vector[0]:
+            x -= speed
+        if vector[1]:
+            x += speed
+        if vector[2]:
+            y -= speed
+        if vector[3]:
+            y += speed
+        tick = (1 + tick) % (len_side_cell / speed)
 
         # Отрисовка
         screen.fill((0, 0, 0))
