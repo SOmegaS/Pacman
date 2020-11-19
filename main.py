@@ -77,6 +77,8 @@ def main():
     pygame.font.SysFont('arial', 36)  # Установка шрифта
     vector = [False, False, False, False]  # Вектор движения: влево, вправо, вверх, вниз
     tick = 0  # Номер тика
+    pause = False  # Включена ли пауза
+    p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     # Главный цикл
     while run:
         clock.tick(FPS)
@@ -85,7 +87,7 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
 
-        if tick == 0:
+        if (tick == 0) & (not pause):
             vector = [False, False, False, False]
             # Отлавливание нажатий клавиш
             keys = pygame.key.get_pressed()
@@ -117,15 +119,23 @@ def main():
                 if area[y_mat][x_mat] == 5:  # Поглощение зерен
                     score += 5
                     area[y_mat][x_mat] = 0
-        if vector[0]:
-            x -= speed
-        if vector[1]:
-            x += speed
-        if vector[2]:
-            y -= speed
-        if vector[3]:
-            y += speed
-        tick = (1 + tick) % (len_side_cell / speed)
+            p_prev_pressed = keys[pygame.K_p]
+            pause = keys[pygame.K_p]
+        elif pause:
+            keys = pygame.key.get_pressed()
+            if (not p_prev_pressed) & keys[pygame.K_p]:
+                pause = False
+            p_prev_pressed = keys[pygame.K_p]
+        if not pause:
+            if vector[0]:
+                x -= speed
+            if vector[1]:
+                x += speed
+            if vector[2]:
+                y -= speed
+            if vector[3]:
+                y += speed
+            tick = (1 + tick) % (len_side_cell / speed)
 
         # Отрисовка
         screen.fill((0, 0, 0))
@@ -133,13 +143,16 @@ def main():
         for i in range(win_height_cell):
             for j in range(win_width_cell):
                 if area[i][j] == 3:  # Отрисовка стенок
-                    pygame.draw.rect(screen, (0, 85, 200), (0 + 20 * j, 0 + 20 * i, len_side_cell, len_side_cell))
+                    pygame.draw.rect(screen, (0, 85, 200), (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
                 if area[i][j] == 5:  # Отрисовка зерен
                     pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 3)
         pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
         f2 = pygame.font.SysFont('arial', 20)
         text2 = f2.render("Score: " + str(score), True, (0, 180, 0))
         screen.blit(text2, (135, 0))
+        if pause:  # Отрисовка паузы
+            pygame.draw.rect(screen, (169, 169, 169), (160, 200, 15, 100))
+            pygame.draw.rect(screen, (169, 169, 169), (210, 200, 15, 100))
         # print(score)
         pygame.display.update()
 
