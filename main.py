@@ -14,6 +14,7 @@ def save(area, score, x, y, x_mat, y_mat):  # Сохранение
     f.write(str(x_mat) + '\n')  # Запись x pacman-а в массиве поля
     f.write(str(y_mat) + '\n')  # Запись y pacman-а в массиве поля
 
+
 def reset_area():
     area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # Инициализация поля
             [3, 1, 5, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 3],
@@ -47,6 +48,7 @@ def reset_area():
     y_mat = 1  # y pacman-а в массиве
     score = 0  # Счет
     return area, score, x, y, x_mat, y_mat
+
 
 def init(win_height_cell):  # Инициализация данных из сохранения
     try:
@@ -93,6 +95,7 @@ def init(win_height_cell):  # Инициализация данных из со�
         score = 0  # Счет
     return area, score, x, y, x_mat, y_mat
 
+
 def main():
     pygame.init()
     len_side_cell = 20  # Длина стороны клетки в пикселях
@@ -108,30 +111,17 @@ def main():
     FPS = 60  # Кадры в секунду
     clock = pygame.time.Clock()
 
-    # Пример заполнения матрицы
-    # for i in range(win_height_cell):
-    #     area.append([0] * win_width_cell)
-    # for i in range(win_width_cell):
-    #     area[0][i] = 3
-    # for i in range(win_width_cell):
-    #     area[win_height_cell-1][i] = 3
-    # for i in range(win_height_cell):
-    #     area[i][0] = 3
-    # for i in range(win_height_cell):
-    #     area[i][win_width_cell-1] = 3
-    # for i in range(win_height_cell):
-    #     area.append([0] * win_width_cell)
-
     # Вывод массива поля для отладки
-    for row in area:
-        for elem in row:
-            print(elem, end=',')
-        print()
+    # for row in area:
+    #     for elem in row:
+    #         print(elem, end=',')
+    #     print()
+
     pygame.font.SysFont('', 36)  # Установка шрифта
     vector = [False, False, False, False]  # Вектор движения: влево, вправо, вверх, вниз
     tick = 0  # Номер тика
     pause = False  # Включена ли пауза
-    reset = False # Положение сброса
+    reset = False  # Положение сброса
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     lives = 3  # Количество жизней
     # Главный цикл
@@ -148,9 +138,9 @@ def main():
                     pause = True
                 if (mouse_x >= 205) & (mouse_x <= 220) & (mouse_y >= 5) & (mouse_y <= 18):
                     reset = True
-                if (pause == True) & (mouse_x >= 150) & (mouse_x <= 240) & (mouse_y >= 200) & (mouse_y <= 300):
+                if pause & (mouse_x >= 150) & (mouse_x <= 240) & (mouse_y >= 200) & (mouse_y <= 300):
                     pause = False
-        if (reset):
+        if reset:
             reset = False
             area, score, x, y, x_mat, y_mat = reset_area()
         if (tick == 0) & (not pause):
@@ -185,14 +175,14 @@ def main():
                 if area[y_mat][x_mat] == 5:  # Поглощение зерен
                     score += 5
                     area[y_mat][x_mat] = 0
-            p_prev_pressed = keys[pygame.K_p]
-            pause = keys[pygame.K_p]
-        elif pause:
+            p_prev_pressed = keys[pygame.K_p]  # Нажата ли клавиша p
+            pause = keys[pygame.K_p]  # Включена ли пауза
+        elif pause:  # Если пауза, проверять только кнопку p
             keys = pygame.key.get_pressed()
             if (not p_prev_pressed) & keys[pygame.K_p]:
                 pause = False
-            p_prev_pressed = keys[pygame.K_p]
-        if not pause:
+            p_prev_pressed = keys[pygame.K_p]  # Это чтобы не было мигания паузы от удержания p
+        if not pause:  # Движение, если не пауза
             if vector[0]:
                 x -= speed
             if vector[1]:
@@ -201,7 +191,7 @@ def main():
                 y -= speed
             if vector[3]:
                 y += speed
-            tick = (1 + tick) % (len_side_cell / speed)
+            tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
 
         # Отрисовка
         screen.fill((0, 0, 0))
@@ -214,13 +204,13 @@ def main():
                     pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 3)
         pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
         f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
-        score_text = f2.render("Score   " + str(score), False, (190, 235, 255))
-        highscore_text = f2.render("Highcore   " + str(score), False, (190, 235, 255))
-        live_text = f2.render("Lives   ", False, (190, 235, 255))
+        score_text = f2.render("Score   " + str(score), False, (190, 235, 255))   # Текст текущего счета
+        highscore_text = f2.render("Highscore   " + str(score), False, (190, 235, 255))  # Текст рекордного счета
+        live_text = f2.render("Lives   ", False, (190, 235, 255))  # Текст количестка жизней
         screen.blit(score_text, (265, 0))  # Вывод текущих очков
         screen.blit(highscore_text, (20, 0))  # Вывод рекорда
         screen.blit(live_text, (20, 480))  # Вывод количества жизней
-        pygame.draw.rect(screen, (190, 235, 255), (205, 5, 12, 12)) #отрисовка кнопки сброса
+        pygame.draw.rect(screen, (190, 235, 255), (205, 5, 12, 12))  # Отрисовка кнопки сброса
         pygame.draw.rect(screen, (190, 235, 255), (184, 5, 4, 13))  # Отрисовка паузы
         pygame.draw.rect(screen, (190, 235, 255), (194, 5, 4, 13))  # Отрисовка паузы
         if pause:  # Отрисовка "play" во время паузы
