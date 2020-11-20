@@ -60,7 +60,6 @@ def init(win_height_cell):  # Инициализация данных из со�
         score = 0  # Счет
     return area, score, x, y, x_mat, y_mat
 
-
 def main():
     pygame.init()
     len_side_cell = 20  # Длина стороны клетки в пикселях
@@ -95,11 +94,12 @@ def main():
         for elem in row:
             print(elem, end=',')
         print()
-    pygame.font.SysFont('arial', 36)  # Установка шрифта
+    pygame.font.SysFont('', 36)  # Установка шрифта
     vector = [False, False, False, False]  # Вектор движения: влево, вправо, вверх, вниз
     tick = 0  # Номер тика
     pause = False  # Включена ли пауза
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
+    lives = 3  # Количество жизней
     # Главный цикл
     while run:
         clock.tick(FPS)
@@ -107,6 +107,13 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                # Обработка паузы и продолжения игры через мышку
+                if (mouse_x >= 184) & (mouse_x <= 198) & (mouse_y >= 5) & (mouse_y <= 18):
+                    pause = True
+                if (pause == True) & (mouse_x >= 150) & (mouse_x <= 240) & (mouse_y >= 200) & (mouse_y <= 300):
+                    pause = False
 
         if (tick == 0) & (not pause):
             vector = [False, False, False, False]
@@ -168,12 +175,17 @@ def main():
                 if area[i][j] == 5:  # Отрисовка зерен
                     pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 3)
         pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
-        f2 = pygame.font.SysFont('arial', 20)
-        text2 = f2.render("Score: " + str(score), True, (0, 180, 0))
-        screen.blit(text2, (135, 0))
-        if pause:  # Отрисовка паузы
-            pygame.draw.rect(screen, (169, 169, 169), (160, 200, 15, 100))
-            pygame.draw.rect(screen, (169, 169, 169), (210, 200, 15, 100))
+        f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
+        score_text = f2.render("Score   " + str(score), False, (190, 235, 255))
+        highscore_text = f2.render("Highcore   " + str(score), False, (190, 235, 255))
+        live_text = f2.render("Lives   ", False, (190, 235, 255))
+        screen.blit(score_text, (265, 0))  # Вывод текущих очков
+        screen.blit(highscore_text, (20, 0))  # Вывод рекорда
+        screen.blit(live_text, (20, 480))  # Вывод количества жизней
+        pygame.draw.rect(screen, (190, 235, 255), (184, 5, 4, 13))  # Отрисовка паузы
+        pygame.draw.rect(screen, (190, 235, 255), (194, 5, 4, 13))  # Отрисовка паузы
+        if pause:  # Отрисовка "play" во время паузы
+            pygame.draw.polygon(screen, (190, 235, 255), [[150, 200], [150, 300], [240, 250]])
         # print(score)
         pygame.display.update()
 
