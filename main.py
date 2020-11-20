@@ -72,7 +72,7 @@ def main():
     run = True  # Индикатор состояния игры
     # 0 - пусто 1 - пакмен 2 - призрак 3 - стена      5 - зерно
 
-    FPS = 120  # Кадры в секунду
+    FPS = 60  # Кадры в секунду
     clock = pygame.time.Clock()
 
     # Пример заполнения матрицы
@@ -98,6 +98,7 @@ def main():
     vector = [False, False, False, False]  # Вектор движения: влево, вправо, вверх, вниз
     tick = 0  # Номер тика
     pause = False  # Включена ли пауза
+    reset = False # Положение сброса
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     lives = 3  # Количество жизней
     # Главный цикл
@@ -109,9 +110,11 @@ def main():
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = event.pos
-                # Обработка паузы и продолжения игры через мышку
+                # Обработка паузы, сброса и продолжения игры через мышку
                 if (mouse_x >= 184) & (mouse_x <= 198) & (mouse_y >= 5) & (mouse_y <= 18):
                     pause = True
+                if (mouse_x >= 205) & (mouse_x <= 220) & (mouse_y >= 5) & (mouse_y <= 18):
+                    reset = True
                 if (pause == True) & (mouse_x >= 150) & (mouse_x <= 240) & (mouse_y >= 200) & (mouse_y <= 300):
                     pause = False
 
@@ -182,6 +185,7 @@ def main():
         screen.blit(score_text, (265, 0))  # Вывод текущих очков
         screen.blit(highscore_text, (20, 0))  # Вывод рекорда
         screen.blit(live_text, (20, 480))  # Вывод количества жизней
+        pygame.draw.rect(screen, (190, 235, 255), (205, 5, 12, 12)) #отрисовка кнопки сброса
         pygame.draw.rect(screen, (190, 235, 255), (184, 5, 4, 13))  # Отрисовка паузы
         pygame.draw.rect(screen, (190, 235, 255), (194, 5, 4, 13))  # Отрисовка паузы
         if pause:  # Отрисовка "play" во время паузы
