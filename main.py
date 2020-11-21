@@ -2,7 +2,7 @@ import pygame
 import sys
 
 
-def save(area, score, x, y, x_mat, y_mat, highscore):  # Сохранение
+def save(area, score, x, y, x_mat, y_mat, highscore, lives):  # Сохранение
     f = open('memo.txt', 'w')  # Файл сохранения
     for i in range(len(area)):  # Запись поля
         for j in range(len(area[0])):
@@ -14,6 +14,7 @@ def save(area, score, x, y, x_mat, y_mat, highscore):  # Сохранение
     f.write(str(x_mat) + '\n')  # Запись x pacman-а в массиве поля
     f.write(str(y_mat) + '\n')  # Запись y pacman-а в массиве поля
     f.write(str(highscore) + '\n') # Запись рекорда
+    f.write(str(lives) + '\n')  # Запись жизней
 
 
 def reset_area():
@@ -48,7 +49,8 @@ def reset_area():
     x_mat = 1  # x pacman-а в массиве
     y_mat = 1  # y pacman-а в массиве
     score = 0  # Счет
-    return area, score, x, y, x_mat, y_mat
+    lives = 3
+    return area, score, x, y, x_mat, y_mat, lives
 
 
 def init(win_height_cell):  # Инициализация данных из сохранения
@@ -62,7 +64,8 @@ def init(win_height_cell):  # Инициализация данных из со�
         y = int(f.readline())  # Считывание y pacman-а
         x_mat = int(f.readline())  # Считывание x pacman-а в массиве поля
         y_mat = int(f.readline())  # Считывание y pacman-а в массиве поля
-        highscore = int(f.readline())  # Считывание счета
+        highscore = int(f.readline())  # Считывание рекорда
+        lives = int(f.readline())  # Считывание жизней
     except FileNotFoundError:  # Ловим ошибку несуществования файла сохранения
         area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # Инициализация поля
                 [3, 1, 5, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 3],
@@ -96,7 +99,7 @@ def init(win_height_cell):  # Инициализация данных из со�
         y_mat = 1  # y pacman-а в массиве
         score = 0  # Счет
         highscore = 0  # Рекрод
-    return area, score, x, y, x_mat, y_mat, highscore
+    return area, score, x, y, x_mat, y_mat, highscore, lives
 
 
 def main():
@@ -106,7 +109,7 @@ def main():
     win_height_cell = 25  # Количество клеток по длине окна
     screen = pygame.display.set_mode((len_side_cell * win_width_cell, len_side_cell * win_height_cell))
     pygame.display.set_caption("Pacman")  # Имя окна приложения
-    area, score, x, y, x_mat, y_mat, highscore = init(win_height_cell)
+    area, score, x, y, x_mat, y_mat, highscore, lives = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     run = True  # Индикатор состояния игры
     # 0 - пусто 1 - пакмен 2 - призрак 3 - стена      5 - зерно
@@ -127,6 +130,7 @@ def main():
     reset = False  # Положение сброса
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     lives = 3  # Количество жизней
+
     # Главный цикл
     while run:
         clock.tick(FPS)
@@ -145,7 +149,7 @@ def main():
                     pause = False
         if reset:
             reset = False
-            area, score, x, y, x_mat, y_mat = reset_area()
+            area, score, x, y, x_mat, y_mat, lives = reset_area()
         if (tick == 0) & (not pause):
             vector = [False, False, False, False]
             # Отлавливание нажатий клавиш
@@ -213,7 +217,7 @@ def main():
         f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
         score_text = f2.render("Score   " + str(score), False, (190, 235, 255))   # Текст текущего счета
         highscore_text = f2.render("Highscore   " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
-        live_text = f2.render("Lives   ", False, (190, 235, 255))  # Текст количестка жизней
+        live_text = f2.render("Lives   " + str(lives), False, (190, 235, 255))  # Текст количестка жизней
         screen.blit(score_text, (265, 0))  # Вывод текущих очков
         screen.blit(highscore_text, (20, 0))  # Вывод рекорда
         screen.blit(live_text, (20, 480))  # Вывод количества жизней
@@ -226,7 +230,7 @@ def main():
         pygame.display.update()
 
     # Выход из игры
-    save(area, score, x, y, x_mat, y_mat, highscore)
+    save(area, score, x, y, x_mat, y_mat, highscore, lives)
     pygame.quit()
     sys.exit()
 
