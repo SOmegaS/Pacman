@@ -1,8 +1,51 @@
 import pygame
 import sys
+import random
 
 
-def save(area, score, x, y, x_mat, y_mat, highscore):  # Сохранение
+class Ghost:
+    def __init__(self, clr, x, y):
+        self.color = clr
+        self.x = 10 + 20 * x
+        self.y = 10 + 20 * y
+        self.x_mat = x
+        self.y_mat = y
+        self.vector = [False, False, False, False]
+
+    def get_x(self):
+        return self.x
+
+    def get_y(self):
+        return self.y
+
+    def get_xmat(self):
+        return self.x_mat
+
+    def get_ymat(self):
+        return self.y_mat
+
+    def get_vector(self):
+        return self.vector
+
+    def get_color(self):
+        return self.color
+
+    def move(self, x, y):
+        self.x += x
+        self.y += y
+
+    def move_mat(self, x, y):
+        self.x_mat += x
+        self.y_mat += y
+
+    def set_vector(self, v):
+        self.vector = v
+
+    def killPacman(self):
+        pass
+
+
+def save(area, score, x, y, x_mat, y_mat):  # Сохранение
     f = open('memo.txt', 'w')  # Файл сохранения
     for i in range(len(area)):  # Запись поля
         for j in range(len(area[0])):
@@ -13,7 +56,6 @@ def save(area, score, x, y, x_mat, y_mat, highscore):  # Сохранение
     f.write(str(y) + '\n')  # Запись y pacman-а
     f.write(str(x_mat) + '\n')  # Запись x pacman-а в массиве поля
     f.write(str(y_mat) + '\n')  # Запись y pacman-а в массиве поля
-    f.write(str(highscore) + '\n') # Запись рекорда
 
 
 def reset_area():
@@ -62,7 +104,6 @@ def init(win_height_cell):  # Инициализация данных из со�
         y = int(f.readline())  # Считывание y pacman-а
         x_mat = int(f.readline())  # Считывание x pacman-а в массиве поля
         y_mat = int(f.readline())  # Считывание y pacman-а в массиве поля
-        highscore = int(f.readline())  # Считывание счета
     except FileNotFoundError:  # Ловим ошибку несуществования файла сохранения
         area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # Инициализация поля
                 [3, 1, 5, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 3],
@@ -95,8 +136,13 @@ def init(win_height_cell):  # Инициализация данных из со�
         x_mat = 1  # x pacman-а в массиве
         y_mat = 1  # y pacman-а в массиве
         score = 0  # Счет
-        highscore = 0  # Рекрод
-    return area, score, x, y, x_mat, y_mat, highscore
+    return area, score, x, y, x_mat, y_mat
+
+
+RED = 255, 0, 0
+ORANGE = 255, 153, 0
+YELLOW = 251, 255, 0
+GREEN = 0, 255, 0
 
 
 def main():
@@ -106,9 +152,11 @@ def main():
     win_height_cell = 25  # Количество клеток по длине окна
     screen = pygame.display.set_mode((len_side_cell * win_width_cell, len_side_cell * win_height_cell))
     pygame.display.set_caption("Pacman")  # Имя окна приложения
-    area, score, x, y, x_mat, y_mat, highscore = init(win_height_cell)
+    area, score, x, y, x_mat, y_mat = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     run = True  # Индикатор состояния игры
+    # массив призраков
+    ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]
     # 0 - пусто 1 - пакмен 2 - призрак 3 - стена      5 - зерно
 
     FPS = 60  # Кадры в секунду
@@ -146,7 +194,30 @@ def main():
         if reset:
             reset = False
             area, score, x, y, x_mat, y_mat = reset_area()
+
         if (tick == 0) & (not pause):
+            # Изменение координат призраков
+            for g in ghosts:
+                vectorGhost = [False, False, False, False]
+                step = random.randint(0, 3)
+                if step == 0:  # влево
+                    if area[g.get_ymat()][g.get_xmat() - 1] != 3:
+                        g.move_mat(-1, 0)
+                        vectorGhost[step] = True
+                if step == 1:  # вправо
+                    if area[g.get_ymat()][g.get_xmat() + 1] != 3:
+                        g.move_mat(1, 0)
+                        vectorGhost[step] = True
+                if step == 2:  # вверх
+                    if area[g.get_ymat() - 1][g.get_xmat()] != 3:
+                        g.move_mat(0, -1)
+                        vectorGhost[step] = True
+                if step == 3:  # вниз
+                    if area[g.get_ymat() + 1][g.get_xmat()] != 3:
+                        g.move_mat(0, 1)
+                        vectorGhost[step] = True
+                g.set_vector(vectorGhost)
+
             vector = [False, False, False, False]
             # Отлавливание нажатий клавиш
             keys = pygame.key.get_pressed()
@@ -194,25 +265,39 @@ def main():
                 y -= speed
             if vector[3]:
                 y += speed
-            tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
+            for g in ghosts: # призраки
+                vectorGhost = g.get_vector()
+                if vectorGhost[0]:
+                    g.move(speed * (-1), 0)
+                if vectorGhost[1]:
+                    g.move(speed, 0)
+                if vectorGhost[2]:
+                    g.move(0, speed * (-1))
+                if vectorGhost[3]:
+                    g.move(0, speed)
 
-        # Обновление рекорда
-        if highscore < score :
-            highscore = score
+            tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
 
         # Отрисовка
         screen.fill((0, 0, 0))
         # Поклеточная отрисовка
+        q = 0  # счётчик для призраков
         for i in range(win_height_cell):
             for j in range(win_width_cell):
                 if area[i][j] == 3:  # Отрисовка стенок
-                    pygame.draw.rect(screen, (0, 85, 200), (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
+                    pygame.draw.rect(screen, (0, 85, 200),
+                                     (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
+                if area[i][j] == 2:
+                    # отрисовка призраков
+                    pygame.draw.circle(screen, ghosts[q].get_color(), (ghosts[q].get_x(), ghosts[q].get_y()), 7)
+                    q += 1
                 if area[i][j] == 5:  # Отрисовка зерен
                     pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 3)
+
         pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
         f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
-        score_text = f2.render("Score   " + str(score), False, (190, 235, 255))   # Текст текущего счета
-        highscore_text = f2.render("Highscore   " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
+        score_text = f2.render("Score   " + str(score), False, (190, 235, 255))  # Текст текущего счета
+        highscore_text = f2.render("Highscore   " + str(score), False, (190, 235, 255))  # Текст рекордного счета
         live_text = f2.render("Lives   ", False, (190, 235, 255))  # Текст количестка жизней
         screen.blit(score_text, (265, 0))  # Вывод текущих очков
         screen.blit(highscore_text, (20, 0))  # Вывод рекорда
@@ -226,7 +311,7 @@ def main():
         pygame.display.update()
 
     # Выход из игры
-    save(area, score, x, y, x_mat, y_mat, highscore)
+    save(area, score, x, y, x_mat, y_mat)
     pygame.quit()
     sys.exit()
 
