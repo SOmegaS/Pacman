@@ -1,7 +1,6 @@
-import pygame
 import sys
 import random
-
+import pygame
 
 class Ghost:
     def __init__(self, clr, x, y):
@@ -41,8 +40,12 @@ class Ghost:
     def set_vector(self, v):
         self.vector = v
 
-    def killPacman(self):
-        pass
+    def killPacman(self, lives, game_status):
+        lives-=1
+        if lives == 0:
+            game_status = 2 # Смена статуса на 2 - экран Game Over
+        #print(lives, " ", game_status)
+        return lives, game_status
 
 def save(area, score, x, y, x_mat, y_mat, highscore, lives):  # Сохранение
     f = open('memo.txt', 'w')  # Файл сохранения
@@ -159,6 +162,7 @@ def main():
     area, score, x, y, x_mat, y_mat, highscore, lives = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     run = True  # Индикатор состояния игры
+    game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
     # массив призраков
     ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]
     # 0 - пусто 1 - пакмен 2 - призрак 3 - стена      5 - зерно
@@ -179,150 +183,227 @@ def main():
     reset = False  # Положение сброса
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     lives = 3  # Количество жизней
+    previous_x_mat = 1
+    previous_y_mat = 1
 
     # Главный цикл
     while run:
-        clock.tick(FPS)
-        # Отлавливание событий
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = event.pos
-                # Обработка паузы, сброса и продолжения игры через мышку
-                if (mouse_x >= 184) & (mouse_x <= 198) & (mouse_y >= 5) & (mouse_y <= 18):
-                    pause = True
-                if (mouse_x >= 205) & (mouse_x <= 220) & (mouse_y >= 5) & (mouse_y <= 18):
-                    reset = True
-                if pause & (mouse_x >= 150) & (mouse_x <= 240) & (mouse_y >= 200) & (mouse_y <= 300):
+        # Экран стартового меню
+        if game_status == 0:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Закрытие программы
+                    run = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = event.pos
+                    # Cтарт новый игры
+                    if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 300) & (mouse_y <= 340):
+                        game_status = 1# Смена статуса на 1 - экран игры
+                        area, score, x, y, x_mat, y_mat, lives = reset_area()  # Перезапуск
+                        ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
+                    # Продолжить игру
+                    if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 380) & (mouse_y <= 420):
+                        game_status = 1 # Смена статуса на 1 - экран игры
+            pygame.draw.rect(screen, (0, 255, 0), (100, 300, 190, 40)) # Кнопка старта новый игры
+            f1 = pygame.font.Font("font.ttf", 100)  # Объявление шрифта
+            f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
+            f3 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
+            start_new_text = f2.render("New game   " , False, (255, 255, 255))  # Текст на кнопке старта новый игры
+            gamename_text = f1.render("PACMAN   ", False, (255, 240, 0))  # Текст PACMAN
+            highscore_text = f2.render("Highscore       " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
+
+            сreated_by_text = f3.render("Created    by    promS101", False, (190, 235, 255))  # Авторы
+            screen.blit(start_new_text, (115, 301))
+            screen.blit(gamename_text, (30, 20))
+            screen.blit(сreated_by_text, (88, 100))
+            screen.blit(highscore_text, (45, 180))
+            if score != 0:
+                pygame.draw.rect(screen, (0, 255, 0), (100, 380, 190, 40))  # Кнопка продолжить игру
+                continue_text = f2.render("Continue   ", False, (255, 255, 255))  # Текст на кнопке продолжить игру
+                score_text = f2.render("Score                         " + str(score), False, (190, 235, 255))  # Текст счета
+                screen.blit(continue_text, (107, 381))
+                screen.blit(score_text, (45, 220))
+
+            pygame.display.update()
+        # Экран самой игры
+        if game_status == 1:
+            clock.tick(FPS)
+            # Отлавливание событий
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = event.pos
+                    # Обработка паузы, сброса и продолжения игры через мышку
+                    if (mouse_x >= 184) & (mouse_x <= 198) & (mouse_y >= 5) & (mouse_y <= 18):
+                        pause = True
+                    if (mouse_x >= 205) & (mouse_x <= 220) & (mouse_y >= 5) & (mouse_y <= 18):
+                        reset = True
+                    if pause & (mouse_x >= 150) & (mouse_x <= 240) & (mouse_y >= 200) & (mouse_y <= 300):
+                        pause = False
+            if reset:
+                reset = False
+                area, score, x, y, x_mat, y_mat, lives = reset_area()
+                ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
+            if (tick == 0) & (not pause):
+                # Изменение координат призраков
+                for g in ghosts:
+                    vectorGhost = [False, False, False, False]
+                    step = random.randint(0, 3)
+                    if step == 0:  # влево
+                        if area[g.get_ymat()][g.get_xmat() - 1] != 3:
+                            g.move_mat(-1, 0)
+                            vectorGhost[step] = True
+                    if step == 1:  # вправо
+                        if area[g.get_ymat()][g.get_xmat() + 1] != 3:
+                            g.move_mat(1, 0)
+                            vectorGhost[step] = True
+                    if step == 2:  # вверх
+                        if area[g.get_ymat() - 1][g.get_xmat()] != 3:
+                            g.move_mat(0, -1)
+                            vectorGhost[step] = True
+                    if step == 3:  # вниз
+                        if area[g.get_ymat() + 1][g.get_xmat()] != 3:
+                            g.move_mat(0, 1)
+                            vectorGhost[step] = True
+                    g.set_vector(vectorGhost)
+
+                vector = [False, False, False, False]
+                # Отлавливание нажатий клавиш
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_a]:  # Влево
+                    if (x_mat == 1) & (y_mat == 12):  # Проверка на телепорт
+                        x_mat = 17
+                        x += 16 * len_side_cell
+                    elif area[y_mat][x_mat - 1] != 3:  # Коллизия со стенками
+                        x_mat -= 1
+                        vector[0] = True
+                    if area[y_mat][x_mat] == 5:  # Поглощение зерен
+                        score += 5
+                        area[y_mat][x_mat] = 0
+                if keys[pygame.K_d]:  # Вправо
+                    if (x_mat == 17) & (y_mat == 12):  # Проверка на телепорт
+                        x_mat = 1
+                        x -= 16 * len_side_cell
+                    elif area[y_mat][x_mat + 1] != 3:  # Коллизия со стенками
+                        x_mat += 1
+                        vector[1] = True
+                    if area[y_mat][x_mat] == 5:  # Поглощение зерен
+                        score += 5
+                        area[y_mat][x_mat] = 0
+                if keys[pygame.K_w]:  # Вверх
+                    if area[y_mat - 1][x_mat] != 3:  # Коллизия со стенками
+                        y_mat -= 1
+                        vector[2] = True
+                    if area[y_mat][x_mat] == 5:  # Поглощение зерен
+                        score += 5
+                        area[y_mat][x_mat] = 0
+                if keys[pygame.K_s]:  # Вниз
+                    if area[y_mat + 1][x_mat] != 3:  # Коллизия со стенками
+                        y_mat += 1
+                        vector[3] = True
+                    if area[y_mat][x_mat] == 5:  # Поглощение зерен
+                        score += 5
+                        area[y_mat][x_mat] = 0
+                p_prev_pressed = keys[pygame.K_p]  # Нажата ли клавиша p
+                pause = keys[pygame.K_p]  # Включена ли пауза
+            elif pause:  # Если пауза, проверять только кнопку p
+                keys = pygame.key.get_pressed()
+                if (not p_prev_pressed) & keys[pygame.K_p]:
                     pause = False
-        if reset:
-            reset = False
-            area, score, x, y, x_mat, y_mat, lives = reset_area()
-        if (tick == 0) & (not pause):
-            # Изменение координат призраков
+                p_prev_pressed = keys[pygame.K_p]  # Это чтобы не было мигания паузы от удержания p
+            if not pause:  # Движение, если не пауза
+                if vector[0]:
+                    x -= speed
+                if vector[1]:
+                    x += speed
+                if vector[2]:
+                    y -= speed
+                if vector[3]:
+                    y += speed
+                for g in ghosts: # призраки
+                    vectorGhost = g.get_vector()
+                    if vectorGhost[0]:
+                        g.move(speed * (-1), 0)
+                    if vectorGhost[1]:
+                        g.move(speed, 0)
+                    if vectorGhost[2]:
+                        g.move(0, speed * (-1))
+                    if vectorGhost[3]:
+                        g.move(0, speed)
+
+                tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
+
+            # Обновление рекорда
+            if highscore < score :
+                highscore = score
+
+            # Колизия пакмана и призрака
             for g in ghosts:
-                vectorGhost = [False, False, False, False]
-                step = random.randint(0, 3)
-                if step == 0:  # влево
-                    if area[g.get_ymat()][g.get_xmat() - 1] != 3:
-                        g.move_mat(-1, 0)
-                        vectorGhost[step] = True
-                if step == 1:  # вправо
-                    if area[g.get_ymat()][g.get_xmat() + 1] != 3:
-                        g.move_mat(1, 0)
-                        vectorGhost[step] = True
-                if step == 2:  # вверх
-                    if area[g.get_ymat() - 1][g.get_xmat()] != 3:
-                        g.move_mat(0, -1)
-                        vectorGhost[step] = True
-                if step == 3:  # вниз
-                    if area[g.get_ymat() + 1][g.get_xmat()] != 3:
-                        g.move_mat(0, 1)
-                        vectorGhost[step] = True
-                g.set_vector(vectorGhost)
+                if (g.get_x() == (x_mat + 1) * 20 - 10)and(g.get_y() == (y_mat + 1) * 20 - 10)and((previous_x_mat != x_mat)or(previous_y_mat != y_mat)):
+                    lives, game_status = ghosts[1].killPacman(lives, game_status)
+                    previous_x_mat = x_mat
+                    previous_Y_mat = y_mat
+            # Отрисовка
+            screen.fill((0, 0, 0))
+            # Поклеточная отрисовка
+            q = 0  # счётчик для призраков
+            for i in range(win_height_cell):
+                for j in range(win_width_cell):
+                    if area[i][j] == 3:  # Отрисовка стенок
+                        pygame.draw.rect(screen, (0, 85, 200),
+                                         (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
+                    if area[i][j] == 2:
+                        # отрисовка призраков
+                        pygame.draw.circle(screen, ghosts[q].get_color(), (ghosts[q].get_x(), ghosts[q].get_y()), 7)
+                        q += 1
+                    if area[i][j] == 5:  # Отрисовка зерен
+                        pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 3)
 
-            vector = [False, False, False, False]
-            # Отлавливание нажатий клавиш
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_a]:  # Влево
-                if (x_mat == 1) & (y_mat == 12):  # Проверка на телепорт
-                    x_mat = 17
-                    x += 16 * len_side_cell
-                elif area[y_mat][x_mat - 1] != 3:  # Коллизия со стенками
-                    x_mat -= 1
-                    vector[0] = True
-                if area[y_mat][x_mat] == 5:  # Поглощение зерен
-                    score += 5
-                    area[y_mat][x_mat] = 0
-            if keys[pygame.K_d]:  # Вправо
-                if (x_mat == 17) & (y_mat == 12):  # Проверка на телепорт
-                    x_mat = 1
-                    x -= 16 * len_side_cell
-                elif area[y_mat][x_mat + 1] != 3:  # Коллизия со стенками
-                    x_mat += 1
-                    vector[1] = True
-                if area[y_mat][x_mat] == 5:  # Поглощение зерен
-                    score += 5
-                    area[y_mat][x_mat] = 0
-            if keys[pygame.K_w]:  # Вверх
-                if area[y_mat - 1][x_mat] != 3:  # Коллизия со стенками
-                    y_mat -= 1
-                    vector[2] = True
-                if area[y_mat][x_mat] == 5:  # Поглощение зерен
-                    score += 5
-                    area[y_mat][x_mat] = 0
-            if keys[pygame.K_s]:  # Вниз
-                if area[y_mat + 1][x_mat] != 3:  # Коллизия со стенками
-                    y_mat += 1
-                    vector[3] = True
-                if area[y_mat][x_mat] == 5:  # Поглощение зерен
-                    score += 5
-                    area[y_mat][x_mat] = 0
-            p_prev_pressed = keys[pygame.K_p]  # Нажата ли клавиша p
-            pause = keys[pygame.K_p]  # Включена ли пауза
-        elif pause:  # Если пауза, проверять только кнопку p
-            keys = pygame.key.get_pressed()
-            if (not p_prev_pressed) & keys[pygame.K_p]:
-                pause = False
-            p_prev_pressed = keys[pygame.K_p]  # Это чтобы не было мигания паузы от удержания p
-        if not pause:  # Движение, если не пауза
-            if vector[0]:
-                x -= speed
-            if vector[1]:
-                x += speed
-            if vector[2]:
-                y -= speed
-            if vector[3]:
-                y += speed
-            for g in ghosts: # призраки
-                vectorGhost = g.get_vector()
-                if vectorGhost[0]:
-                    g.move(speed * (-1), 0)
-                if vectorGhost[1]:
-                    g.move(speed, 0)
-                if vectorGhost[2]:
-                    g.move(0, speed * (-1))
-                if vectorGhost[3]:
-                    g.move(0, speed)
+            pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
+            f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
+            score_text = f2.render("Score   " + str(score), False, (190, 235, 255))   # Текст текущего счета
+            highscore_text = f2.render("Highscore   " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
+            live_text = f2.render("Lives   " + str(lives), False, (190, 235, 255))  # Текст количестка жизней
+            screen.blit(score_text, (265, 0))  # Вывод текущих очков
+            screen.blit(highscore_text, (20, 0))  # Вывод рекорда
+            screen.blit(live_text, (20, 480))  # Вывод количества жизней
+            pygame.draw.rect(screen, (190, 235, 255), (205, 5, 12, 12))  # Отрисовка кнопки сброса
+            pygame.draw.rect(screen, (190, 235, 255), (184, 5, 4, 13))  # Отрисовка паузы
+            pygame.draw.rect(screen, (190, 235, 255), (194, 5, 4, 13))  # Отрисовка паузы
+            if pause:  # Отрисовка "play" во время паузы
+                pygame.draw.polygon(screen, (190, 235, 255), [[150, 200], [150, 300], [240, 250]])
+            # print(score)
+            pygame.display.update()
 
-            tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
+        # Экран Game Over
+        if game_status == 2:
+            lives = 3
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:  # Закрытие программы
+                    run = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = event.pos
+                    # Обработка старта новый игры
+                    if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 340) & (mouse_y <= 380):
+                        game_status = 1  # Смена статуса на 1 - экран игры
+                        area, score, x, y, x_mat, y_mat, lives = reset_area()  # Перезапуск карты
+                        ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)] # Перенос призраков на их стартовые места
 
-        # Обновление рекорда
-        if highscore < score :
-            highscore = score
 
-        # Отрисовка
-        screen.fill((0, 0, 0))
-        # Поклеточная отрисовка
-        q = 0  # счётчик для призраков
-        for i in range(win_height_cell):
-            for j in range(win_width_cell):
-                if area[i][j] == 3:  # Отрисовка стенок
-                    pygame.draw.rect(screen, (0, 85, 200),
-                                     (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
-                if area[i][j] == 2:
-                    # отрисовка призраков
-                    pygame.draw.circle(screen, ghosts[q].get_color(), (ghosts[q].get_x(), ghosts[q].get_y()), 7)
-                    q += 1
-                if area[i][j] == 5:  # Отрисовка зерен
-                    pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 3)
-
-        pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
-        f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
-        score_text = f2.render("Score   " + str(score), False, (190, 235, 255))   # Текст текущего счета
-        highscore_text = f2.render("Highscore   " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
-        live_text = f2.render("Lives   " + str(lives), False, (190, 235, 255))  # Текст количестка жизней
-        screen.blit(score_text, (265, 0))  # Вывод текущих очков
-        screen.blit(highscore_text, (20, 0))  # Вывод рекорда
-        screen.blit(live_text, (20, 480))  # Вывод количества жизней
-        pygame.draw.rect(screen, (190, 235, 255), (205, 5, 12, 12))  # Отрисовка кнопки сброса
-        pygame.draw.rect(screen, (190, 235, 255), (184, 5, 4, 13))  # Отрисовка паузы
-        pygame.draw.rect(screen, (190, 235, 255), (194, 5, 4, 13))  # Отрисовка паузы
-        if pause:  # Отрисовка "play" во время паузы
-            pygame.draw.polygon(screen, (190, 235, 255), [[150, 200], [150, 300], [240, 250]])
-        # print(score)
-        pygame.display.update()
+            # Отрисовка
+            screen.fill((0, 0, 0))
+            pygame.draw.rect(screen, (0, 255, 0), (100, 340, 190, 40)) # Кнопка рестарта
+            f1 = pygame.font.Font("font.ttf", 70)  # Объявление шрифта
+            f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
+            restart_text = f2.render("New game   " , False, (255, 255, 255))  # Текст на кнопке рестарта
+            gameover_text = f1.render("Game Over   ", False, (255, 0, 0))  # Текст Game Over
+            highscore_text = f2.render("Highscore       " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
+            score_text = f2.render("Score                         " + str(score), False, (190, 235, 255))  # Текст счета
+            screen.blit(restart_text, (115, 341))
+            screen.blit(gameover_text, (30, 60))
+            screen.blit(highscore_text, (45, 180))
+            screen.blit(score_text, (45, 220))
+            pygame.display.update()
 
     # Выход из игры
     save(area, score, x, y, x_mat, y_mat, highscore, lives)
@@ -332,3 +413,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
