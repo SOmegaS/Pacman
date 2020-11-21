@@ -226,14 +226,20 @@ def main():
             # Отлавливание нажатий клавиш
             keys = pygame.key.get_pressed()
             if keys[pygame.K_a]:  # Влево
-                if area[y_mat][x_mat - 1] != 3:  # Коллизия со стенками
+                if (x_mat == 1) & (y_mat == 12):  # Проверка на телепорт
+                    x_mat = 17
+                    x += 16 * len_side_cell
+                elif area[y_mat][x_mat - 1] != 3:  # Коллизия со стенками
                     x_mat -= 1
                     vector[0] = True
                 if area[y_mat][x_mat] == 5:  # Поглощение зерен
                     score += 5
                     area[y_mat][x_mat] = 0
             if keys[pygame.K_d]:  # Вправо
-                if area[y_mat][x_mat + 1] != 3:  # Коллизия со стенками
+                if (x_mat == 17) & (y_mat == 12):  # Проверка на телепорт
+                    x_mat = 1
+                    x -= 16 * len_side_cell
+                elif area[y_mat][x_mat + 1] != 3:  # Коллизия со стенками
                     x_mat += 1
                     vector[1] = True
                 if area[y_mat][x_mat] == 5:  # Поглощение зерен
