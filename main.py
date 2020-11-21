@@ -2,7 +2,7 @@ import pygame
 import sys
 
 
-def save(area, score, x, y, x_mat, y_mat):  # Сохранение
+def save(area, score, x, y, x_mat, y_mat, highscore):  # Сохранение
     f = open('memo.txt', 'w')  # Файл сохранения
     for i in range(len(area)):  # Запись поля
         for j in range(len(area[0])):
@@ -13,6 +13,7 @@ def save(area, score, x, y, x_mat, y_mat):  # Сохранение
     f.write(str(y) + '\n')  # Запись y pacman-а
     f.write(str(x_mat) + '\n')  # Запись x pacman-а в массиве поля
     f.write(str(y_mat) + '\n')  # Запись y pacman-а в массиве поля
+    f.write(str(highscore) + '\n') # Запись рекорда
 
 
 def reset_area():
@@ -61,6 +62,7 @@ def init(win_height_cell):  # Инициализация данных из со�
         y = int(f.readline())  # Считывание y pacman-а
         x_mat = int(f.readline())  # Считывание x pacman-а в массиве поля
         y_mat = int(f.readline())  # Считывание y pacman-а в массиве поля
+        highscore = int(f.readline())  # Считывание счета
     except FileNotFoundError:  # Ловим ошибку несуществования файла сохранения
         area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # Инициализация поля
                 [3, 1, 5, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 3],
@@ -93,7 +95,8 @@ def init(win_height_cell):  # Инициализация данных из со�
         x_mat = 1  # x pacman-а в массиве
         y_mat = 1  # y pacman-а в массиве
         score = 0  # Счет
-    return area, score, x, y, x_mat, y_mat
+        highscore = 0  # Рекрод
+    return area, score, x, y, x_mat, y_mat, highscore
 
 
 def main():
@@ -103,7 +106,7 @@ def main():
     win_height_cell = 25  # Количество клеток по длине окна
     screen = pygame.display.set_mode((len_side_cell * win_width_cell, len_side_cell * win_height_cell))
     pygame.display.set_caption("Pacman")  # Имя окна приложения
-    area, score, x, y, x_mat, y_mat = init(win_height_cell)
+    area, score, x, y, x_mat, y_mat, highscore = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     run = True  # Индикатор состояния игры
     # 0 - пусто 1 - пакмен 2 - призрак 3 - стена      5 - зерно
@@ -193,6 +196,10 @@ def main():
                 y += speed
             tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
 
+        # Обновление рекорда
+        if highscore < score :
+            highscore = score
+
         # Отрисовка
         screen.fill((0, 0, 0))
         # Поклеточная отрисовка
@@ -205,7 +212,7 @@ def main():
         pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
         f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
         score_text = f2.render("Score   " + str(score), False, (190, 235, 255))   # Текст текущего счета
-        highscore_text = f2.render("Highscore   " + str(score), False, (190, 235, 255))  # Текст рекордного счета
+        highscore_text = f2.render("Highscore   " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
         live_text = f2.render("Lives   ", False, (190, 235, 255))  # Текст количестка жизней
         screen.blit(score_text, (265, 0))  # Вывод текущих очков
         screen.blit(highscore_text, (20, 0))  # Вывод рекорда
@@ -219,7 +226,7 @@ def main():
         pygame.display.update()
 
     # Выход из игры
-    save(area, score, x, y, x_mat, y_mat)
+    save(area, score, x, y, x_mat, y_mat, highscore)
     pygame.quit()
     sys.exit()
 
