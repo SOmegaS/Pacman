@@ -2,6 +2,7 @@ import sys
 import random
 import pygame
 
+
 class Ghost:
     def __init__(self, clr, x, y):
         self.color = clr
@@ -41,11 +42,11 @@ class Ghost:
         self.vector = v
 
     def killPacman(self, lives, game_status):
-        lives-=1
+        lives -= 1
         if lives == 0:
-            game_status = 2 # Смена статуса на 2 - экран Game Over
-        #print(lives, " ", game_status)
+            game_status = 2  # Смена статуса на 2 - экран Game Over
         return lives, game_status
+
 
 def save(area, score, x, y, x_mat, y_mat, highscore, lives):  # Сохранение
     f = open('memo.txt', 'w')  # Файл сохранения
@@ -58,7 +59,7 @@ def save(area, score, x, y, x_mat, y_mat, highscore, lives):  # Сохранен
     f.write(str(y) + '\n')  # Запись y pacman-а
     f.write(str(x_mat) + '\n')  # Запись x pacman-а в массиве поля
     f.write(str(y_mat) + '\n')  # Запись y pacman-а в массиве поля
-    f.write(str(highscore) + '\n') # Запись рекорда
+    f.write(str(highscore) + '\n')  # Запись рекорда
     f.write(str(lives) + '\n')  # Запись жизней
 
 
@@ -147,10 +148,12 @@ def init(win_height_cell):  # Инициализация данных из со�
         highscore = 0  # Рекрод
     return area, score, x, y, x_mat, y_mat, highscore, lives
 
+
 RED = 255, 0, 0
 ORANGE = 255, 153, 0
 YELLOW = 251, 255, 0
 GREEN = 0, 255, 0
+
 
 def main():
     pygame.init()
@@ -170,12 +173,6 @@ def main():
     FPS = 60  # Кадры в секунду
     clock = pygame.time.Clock()
 
-    # Вывод массива поля для отладки
-    # for row in area:
-    #     for elem in row:
-    #         print(elem, end=',')
-    #     print()
-
     pygame.font.SysFont('', 36)  # Установка шрифта
     vector = [False, False, False, False]  # Вектор движения: влево, вправо, вверх, вниз
     tick = 0  # Номер тика
@@ -183,8 +180,6 @@ def main():
     reset = False  # Положение сброса
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     lives = 3  # Количество жизней
-    previous_x_mat = 1
-    previous_y_mat = 1
 
     # Главный цикл
     while run:
@@ -195,15 +190,15 @@ def main():
                     run = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
-                    # Cтарт новый игры
+                    # Старт новой игры
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 300) & (mouse_y <= 340):
-                        game_status = 1# Смена статуса на 1 - экран игры
+                        game_status = 1  # Смена статуса на 1 - экран игры
                         area, score, x, y, x_mat, y_mat, lives = reset_area()  # Перезапуск
                         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
                     # Продолжить игру
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 380) & (mouse_y <= 420):
                         game_status = 1 # Смена статуса на 1 - экран игры
-            pygame.draw.rect(screen, (0, 255, 0), (100, 300, 190, 40)) # Кнопка старта новый игры
+            pygame.draw.rect(screen, (0, 255, 0), (100, 300, 190, 40))  # Кнопка старта новый игры
             f1 = pygame.font.Font("font.ttf", 100)  # Объявление шрифта
             f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
             f3 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
@@ -320,7 +315,7 @@ def main():
                     y -= speed
                 if vector[3]:
                     y += speed
-                for g in ghosts: # призраки
+                for g in ghosts:  # Перемещение призраков
                     vectorGhost = g.get_vector()
                     if vectorGhost[0]:
                         g.move(speed * (-1), 0)
@@ -334,26 +329,29 @@ def main():
                 tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
 
             # Обновление рекорда
-            if highscore < score :
+            if highscore < score:
                 highscore = score
 
             # Колизия пакмана и призрака
             for g in ghosts:
-                if (g.get_x() == (x_mat + 1) * 20 - 10)and(g.get_y() == (y_mat + 1) * 20 - 10)and((previous_x_mat != x_mat)or(previous_y_mat != y_mat)):
+                if (g.get_x() == (x_mat + 1) * 20 - 10) & (g.get_y() == (y_mat + 1) * 20 - 10):
                     lives, game_status = ghosts[1].killPacman(lives, game_status)
-                    previous_x_mat = x_mat
-                    previous_Y_mat = y_mat
+                    x_mat = 1
+                    y_mat = 1
+                    x = 30
+                    y = 30
+                    vector = [False, False, False, False]
             # Отрисовка
             screen.fill((0, 0, 0))
             # Поклеточная отрисовка
-            q = 0  # счётчик для призраков
+            q = 0  # Счётчик для призраков
             for i in range(win_height_cell):
                 for j in range(win_width_cell):
                     if area[i][j] == 3:  # Отрисовка стенок
                         pygame.draw.rect(screen, (0, 85, 200),
                                          (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
                     if area[i][j] == 2:
-                        # отрисовка призраков
+                        # Отрисовка призраков
                         pygame.draw.circle(screen, ghosts[q].get_color(), (ghosts[q].get_x(), ghosts[q].get_y()), 7)
                         q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
@@ -387,8 +385,7 @@ def main():
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 340) & (mouse_y <= 380):
                         game_status = 1  # Смена статуса на 1 - экран игры
                         area, score, x, y, x_mat, y_mat, lives = reset_area()  # Перезапуск карты
-                        ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)] # Перенос призраков на их стартовые места
-
+                        ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
 
             # Отрисовка
             screen.fill((0, 0, 0))
