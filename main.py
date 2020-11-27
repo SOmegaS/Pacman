@@ -145,7 +145,7 @@ def init(win_height_cell):  # Инициализация данных из со�
         y_mat = 1  # y pacman-а в массиве
         score = 0  # Счет
         lives = 3
-        highscore = 0  # Рекрод
+        highscore = 0  # Рекорд
     return area, score, x, y, x_mat, y_mat, highscore, lives
 
 
@@ -180,7 +180,13 @@ def main():
     reset = False  # Положение сброса
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     lives = 3  # Количество жизней
-
+    volume_on = True  # Переменная, отвечающая за звук
+    image_restart = pygame.image.load('restart.png')  # Объявление изображения кнопки сброса
+    image_restart_mini = pygame.image.load('restart_mini.png')  # Объявление изображения маленькой кнопки сброса
+    image_pause = pygame.image.load('pause.png')  # Объявление изображения кнопки паузы
+    image_map = pygame.image.load('map.png')  # Объявление изображения поля
+    image_volume_on = pygame.image.load('Volume_on.png')  # Объявление изображения кнопки звука (вкл.)
+    image_volume_off = pygame.image.load('Volume_off.png')  # Объявление изображения кнопки звука (выкл.)
     # Главный цикл
     while run:
         # Экран стартового меню
@@ -233,8 +239,16 @@ def main():
                         pause = True
                     if (mouse_x >= 205) & (mouse_x <= 220) & (mouse_y >= 5) & (mouse_y <= 18):
                         reset = True
-                    if pause & (mouse_x >= 150) & (mouse_x <= 240) & (mouse_y >= 200) & (mouse_y <= 300):
-                        pause = False
+                    # Обработка сброса, паузы и кнопки звука во время паузы через мышку
+                    if pause:
+                        if pause & (mouse_x >= 100) & (mouse_x <= 160) & (mouse_y >= 200) & (mouse_y <= 280):
+                            pause = False
+                        if (mouse_x >= 250) & (mouse_x <= 310) & (mouse_y >= 200) & (mouse_y <= 280):
+                            reset = True
+                        if volume_on & (mouse_x >= 30) & (mouse_x <= 70) & (mouse_y >= 20) & (mouse_y <= 60):
+                            volume_on = False
+                        elif (mouse_x >= 30) & (mouse_x <= 70) & (mouse_y >= 20) & (mouse_y <= 60):
+                            volume_on = True
             if reset:
                 reset = False
                 area, score, x, y, x_mat, y_mat, lives = reset_area()
@@ -343,34 +357,48 @@ def main():
                     vector = [False, False, False, False]
             # Отрисовка
             screen.fill((0, 0, 0))
+            screen.blit(image_map, (0, 0))  # Отрисовка поля
             # Поклеточная отрисовка
             q = 0  # Счётчик для призраков
             for i in range(win_height_cell):
                 for j in range(win_width_cell):
-                    if area[i][j] == 3:  # Отрисовка стенок
-                        pygame.draw.rect(screen, (0, 85, 200),
-                                         (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
+                    #if area[i][j] == 3:  # Отрисовка стенок
+                        #pygame.draw.rect(screen, (0, 85, 200),
+                                         #(0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
                     if area[i][j] == 2:
                         # Отрисовка призраков
                         pygame.draw.circle(screen, ghosts[q].get_color(), (ghosts[q].get_x(), ghosts[q].get_y()), 7)
                         q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
-                        pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 3)
+                        pygame.draw.circle(screen, (255, 240, 220), (10 + 20 * j, 10 + 20 * i), 3)
 
             pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
             f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
-            score_text = f2.render("Score   " + str(score), False, (190, 235, 255))   # Текст текущего счета
-            highscore_text = f2.render("Highscore   " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
-            live_text = f2.render("Lives   " + str(lives), False, (190, 235, 255))  # Текст количестка жизней
+            score_text = f2.render("Score   " + str(score), False, (255, 255, 255))   # Текст текущего счета
+            highscore_text = f2.render("Highscore   " + str(highscore), False, (255, 255, 255))  # Текст рекордного счета
+            live_text = f2.render("Lives   " + str(lives), False, (230, 230, 255))  # Текст количестка жизней
             screen.blit(score_text, (265, 0))  # Вывод текущих очков
             screen.blit(highscore_text, (20, 0))  # Вывод рекорда
             screen.blit(live_text, (20, 480))  # Вывод количества жизней
-            pygame.draw.rect(screen, (190, 235, 255), (205, 5, 12, 12))  # Отрисовка кнопки сброса
-            pygame.draw.rect(screen, (190, 235, 255), (184, 5, 4, 13))  # Отрисовка паузы
-            pygame.draw.rect(screen, (190, 235, 255), (194, 5, 4, 13))  # Отрисовка паузы
-            if pause:  # Отрисовка "play" во время паузы
-                pygame.draw.polygon(screen, (190, 235, 255), [[150, 200], [150, 300], [240, 250]])
-            # print(score)
+            image_restart_mini.set_colorkey((0, 0, 0))  # Отрисовка кнопки сброса
+            screen.blit(image_restart_mini, (205, 2))  # Отрисовка кнопки сброса
+            pygame.draw.rect(screen, (255, 255, 255), (184, 5, 4, 13))  # Отрисовка паузы
+            pygame.draw.rect(screen, (255, 255, 255), (194, 5, 4, 13))  # Отрисовка паузы
+            if pause:
+                sc = pygame.Surface((380, 500))  # Установка затемнённого поля
+                sc.set_alpha(230)  # Установка уровня прозрачности
+                sc.fill((0, 0, 0))  # Заполнение полупрозрачного фона
+                screen.blit(sc, (0, 0))  # Отрисовка полупрозрачного фона
+                image_restart.set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
+                screen.blit(image_restart, (250, 200))  # Отрисовка кнопки сброса
+                image_pause.set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
+                screen.blit(image_pause, (100, 200))    # Отрисовка кнопки паузы
+                image_restart.set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
+                if volume_on == True:
+                    screen.blit(image_volume_on, (30, 20))  # Отрисовка кнопки звука (вкл.)
+                else:
+                    screen.blit(image_volume_off, (30, 20))  # Отрисовка кнопки звука (выкл.)
+                # print(score)
             pygame.display.update()
 
         # Экран Game Over
