@@ -173,6 +173,7 @@ def main():
     FPS = 60  # Кадры в секунду
     clock = pygame.time.Clock()
 
+    # Объявление глобальных переменных
     pygame.font.SysFont('', 36)  # Установка шрифта
     vector = [False, False, False, False]  # Вектор движения: влево, вправо, вверх, вниз
     tick = 0  # Номер тика
@@ -181,12 +182,18 @@ def main():
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     lives = 3  # Количество жизней
     volume_on = True  # Переменная, отвечающая за звук
-    image_restart = pygame.image.load('restart.png')  # Объявление изображения кнопки сброса
-    image_restart_mini = pygame.image.load('restart_mini.png')  # Объявление изображения маленькой кнопки сброса
-    image_pause = pygame.image.load('pause.png')  # Объявление изображения кнопки паузы
-    image_map = pygame.image.load('map.png')  # Объявление изображения поля
-    image_volume_on = pygame.image.load('Volume_on.png')  # Объявление изображения кнопки звука (вкл.)
-    image_volume_off = pygame.image.load('Volume_off.png')  # Объявление изображения кнопки звука (выкл.)
+    # Загрузка файлов
+    image_restart = pygame.image.load('images\\restart.png')  # Объявление изображения кнопки сброса
+    image_restart_mini = pygame.image.load('images\\restart_mini.png')  # Объявление изображения маленькой кнопки сброса
+    image_pause = pygame.image.load('images\\pause.png')  # Объявление изображения кнопки паузы
+    image_map = pygame.image.load('images\\map.png')  # Объявление изображения поля
+    image_volume_on = pygame.image.load('images\\Volume_on.png')  # Объявление изображения кнопки звука (вкл.)
+    image_volume_off = pygame.image.load('images\\Volume_off.png')  # Объявление изображения кнопки звука (выкл.)
+    image_pacman_right = pygame.image.load('images\\pacman_right.gif')  # Загрузка изображения пакмена
+    image_pacman_left = pygame.image.load('images\\pacman_left.gif')
+    image_pacman_up = pygame.image.load('images\\pacman_up.gif')
+    image_pacman_down = pygame.image.load('images\\pacman_down.gif')
+    image_ghost = pygame.image.load('images\\ghost.gif')  # Загрузка изображения призрака
     # Главный цикл
     while run:
         # Экран стартового меню
@@ -367,12 +374,19 @@ def main():
                                          #(0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
                     if area[i][j] == 2:
                         # Отрисовка призраков
-                        pygame.draw.circle(screen, ghosts[q].get_color(), (ghosts[q].get_x(), ghosts[q].get_y()), 7)
+                        screen.blit(image_ghost, (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
                         q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
                         pygame.draw.circle(screen, (255, 240, 220), (10 + 20 * j, 10 + 20 * i), 3)
 
-            pygame.draw.circle(screen, (0, 250, 200), (x, y), 7)  # Отрисовка pacman-а
+            if vector[0]:  # Отрисовка pacman-а
+                screen.blit(image_pacman_left, (x - 10, y - 10))
+            elif vector[2]:
+                screen.blit(image_pacman_up, (x - 10, y - 10))
+            elif vector[3]:
+                screen.blit(image_pacman_down, (x - 10, y - 10))
+            else:
+                screen.blit(image_pacman_right, (x - 10, y - 10))
             f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
             score_text = f2.render("Score   " + str(score), False, (255, 255, 255))   # Текст текущего счета
             highscore_text = f2.render("Highscore   " + str(highscore), False, (255, 255, 255))  # Текст рекордного счета
