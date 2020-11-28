@@ -1,6 +1,7 @@
 import sys
 import random
 import pygame
+import time
 
 
 class Ghost:
@@ -179,6 +180,7 @@ def main():
     tick = 0  # Номер тика
     pause = False  # Включена ли пауза
     reset = False  # Положение сброса
+    killed = False  # Смерть пакмана
     p_prev_pressed = True  # Была ли нажата буква p в предыдущий тик
     lives = 3  # Количество жизней
     tickbig = 0  # для больших зерен просто забей
@@ -263,7 +265,7 @@ def main():
                 reset = False
                 area, score, x, y, x_mat, y_mat, lives = reset_area()
                 ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
-            if (tick == 0) & (not pause):
+            if (tick == 0) & (not pause) & (not killed):
                 # Изменение координат призраков
                 for g in ghosts:
                     vectorGhost = [False, False, False, False]
@@ -342,7 +344,7 @@ def main():
                 if (not p_prev_pressed) & keys[pygame.K_p]:
                     pause = False
                 p_prev_pressed = keys[pygame.K_p]  # Это чтобы не было мигания паузы от удержания p
-            if not pause:  # Движение, если не пауза
+            if (not pause) & (not killed):  # Движение, если не пауза
                 if vector[0]:
                     x -= speed
                 if vector[1]:
@@ -372,6 +374,9 @@ def main():
             for g in ghosts:
                 if (g.get_x() == (x_mat + 1) * 20 - 10) & (g.get_y() == (y_mat + 1) * 20 - 10):
                     lives, game_status = ghosts[1].killPacman(lives, game_status)
+                    killed = True
+                    time.sleep(1)
+                    killed = False
                     x_mat = 1
                     y_mat = 1
                     x = 30
