@@ -299,6 +299,9 @@ def main():
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
                         score += 5
                         area[y_mat][x_mat] = 0
+                    if area[y_mat][x_mat] == 6:  # Поглощение зерен
+                        score += 10
+                        area[y_mat][x_mat] = 0
                 if keys[pygame.K_d]:  # Вправо
                     if (x_mat == 17) & (y_mat == 12):  # Проверка на телепорт
                         x_mat = 1
@@ -309,6 +312,9 @@ def main():
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
                         score += 5
                         area[y_mat][x_mat] = 0
+                    if area[y_mat][x_mat] == 6:  # Поглощение зерен
+                        score += 10
+                        area[y_mat][x_mat] = 0
                 if keys[pygame.K_w]:  # Вверх
                     if area[y_mat - 1][x_mat] != 3:  # Коллизия со стенками
                         y_mat -= 1
@@ -316,12 +322,18 @@ def main():
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
                         score += 5
                         area[y_mat][x_mat] = 0
+                    if area[y_mat][x_mat] == 6:  # Поглощение зерен
+                        score += 10
+                        area[y_mat][x_mat] = 0
                 if keys[pygame.K_s]:  # Вниз
                     if area[y_mat + 1][x_mat] != 3:  # Коллизия со стенками
                         y_mat += 1
                         vector[3] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
                         score += 5
+                        area[y_mat][x_mat] = 0
+                    if area[y_mat][x_mat] == 6:  # Поглощение зерен
+                        score += 10
                         area[y_mat][x_mat] = 0
                 p_prev_pressed = keys[pygame.K_p]  # Нажата ли клавиша p
                 pause = keys[pygame.K_p]  # Включена ли пауза
