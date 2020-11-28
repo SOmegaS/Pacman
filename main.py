@@ -219,13 +219,13 @@ def main():
             f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
             f3 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
             start_new_text = f2.render("New game   " , False, (255, 255, 255))  # Текст на кнопке старта новый игры
-            gamename_text = f1.render("PACMAN   ", False, (255, 240, 0))  # Текст PACMAN
+            game_name_text = f1.render("PACMAN   ", False, (255, 240, 0))  # Текст PACMAN
             highscore_text = f2.render("Highscore       " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
 
-            сreated_by_text = f3.render("Created    by    promS101", False, (190, 235, 255))  # Авторы
+            created_by_text = f3.render("Created    by    promS101", False, (190, 235, 255))  # Авторы
             screen.blit(start_new_text, (115, 301))
-            screen.blit(gamename_text, (30, 20))
-            screen.blit(сreated_by_text, (88, 100))
+            screen.blit(game_name_text, (30, 20))
+            screen.blit(created_by_text, (88, 100))
             screen.blit(highscore_text, (45, 180))
             if score != 0:
                 pygame.draw.rect(screen, (0, 255, 0), (100, 380, 190, 40))  # Кнопка продолжить игру
@@ -372,9 +372,6 @@ def main():
             q = 0  # Счётчик для призраков
             for i in range(win_height_cell):
                 for j in range(win_width_cell):
-                    #if area[i][j] == 3:  # Отрисовка стенок
-                        #pygame.draw.rect(screen, (0, 85, 200),
-                                         #(0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
                     if area[i][j] == 2:
                         # Отрисовка призраков
                         screen.blit(image_ghost, (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
@@ -415,11 +412,10 @@ def main():
                 image_pause.set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
                 screen.blit(image_pause, (100, 200))    # Отрисовка кнопки паузы
                 image_restart.set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
-                if volume_on == True:
+                if volume_on:
                     screen.blit(image_volume_on, (30, 20))  # Отрисовка кнопки звука (вкл.)
                 else:
                     screen.blit(image_volume_off, (30, 20))  # Отрисовка кнопки звука (выкл.)
-                # print(score)
             pygame.display.update()
 
         # Экран Game Over
@@ -441,18 +437,18 @@ def main():
             pygame.draw.rect(screen, (0, 255, 0), (100, 340, 190, 40)) # Кнопка рестарта
             f1 = pygame.font.Font("font.ttf", 70)  # Объявление шрифта
             f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
-            restart_text = f2.render("New game   " , False, (255, 255, 255))  # Текст на кнопке рестарта
+            restart_text = f2.render("New game   ", False, (255, 255, 255))  # Текст на кнопке рестарта
             gameover_text = f1.render("Game Over   ", False, (255, 0, 0))  # Текст Game Over
             highscore_text = f2.render("Highscore       " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
             score_text = f2.render("Score                         " + str(score), False, (190, 235, 255))  # Текст счета
-            screen.blit(restart_text, (115, 341))
-            screen.blit(gameover_text, (30, 60))
-            screen.blit(highscore_text, (45, 180))
-            screen.blit(score_text, (45, 220))
+            screen.blit(restart_text, (115, 341))  # Отрисовка текста рестарт
+            screen.blit(gameover_text, (30, 60))  # Отрисовка текста завершения игры
+            screen.blit(highscore_text, (45, 180))  # Отрисовка рекорда
+            screen.blit(score_text, (45, 220))  # Отрисовка счета
             pygame.display.update()
 
     # Выход из игры
-    save(area, score, x, y, x_mat, y_mat, highscore, lives)
+    save(area, score, x, y, x_mat, y_mat, highscore, lives)  # Сохранение
     pygame.quit()
     sys.exit()
 
