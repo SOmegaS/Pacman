@@ -186,17 +186,19 @@ def main():
     tickbig = 0  # для больших зерен просто забей
     volume_on = True  # Переменная, отвечающая за звук
     # Загрузка файлов
-    image_restart = pygame.image.load('images/restart.png')  # Объявление изображения кнопки сброса
-    image_restart_mini = pygame.image.load('images/restart_mini.png')  # Объявление изображения маленькой кнопки сброса
-    image_pause = pygame.image.load('images/pause.png')  # Объявление изображения кнопки паузы
-    image_map = pygame.image.load('images/map.png')  # Объявление изображения поля
-    image_volume_on = pygame.image.load('images/Volume_on.png')  # Объявление изображения кнопки звука (вкл.)
-    image_volume_off = pygame.image.load('images/Volume_off.png')  # Объявление изображения кнопки звука (выкл.)
-    image_pacman_right = pygame.image.load('images/pacman_right.gif')  # Загрузка изображения пакмена
-    image_pacman_left = pygame.image.load('images/pacman_left.gif')
-    image_pacman_up = pygame.image.load('images/pacman_up.gif')
-    image_pacman_down = pygame.image.load('images/pacman_down.gif')
-    image_ghost = pygame.image.load('images/ghost.gif')  # Загрузка изображения призрака
+    image = {
+        'restart': pygame.image.load('images/restart.png'),  # Объявление изображения кнопки сброса
+        'restart_mini': pygame.image.load('images/restart_mini.png'),  # Объявление изображения маленькой кнопки сброса
+        'pause': pygame.image.load('images/pause.png'),  # Объявление изображения кнопки паузы
+        'map': pygame.image.load('images/map.png'),  # Объявление изображения поля
+        'volume_on': pygame.image.load('images/Volume_on.png'),  # Объявление изображения кнопки звука (вкл.)
+        'volume_off': pygame.image.load('images/Volume_off.png'),  # Объявление изображения кнопки звука (выкл.)
+        'pacman_right': pygame.image.load('images/pacman_right.gif'),  # Загрузка изображения пакмена
+        'pacman_left': pygame.image.load('images/pacman_left.gif'),
+        'pacman_up': pygame.image.load('images/pacman_up.gif'),
+        'pacman_down': pygame.image.load('images/pacman_down.gif'),
+        'ghost': pygame.image.load('images/ghost.gif')  # Загрузка изображения призрака
+    }
     # Главный цикл
     while run:
         tickbig +=1
@@ -268,25 +270,25 @@ def main():
             if (tick == 0) & (not pause) & (not killed):
                 # Изменение координат призраков
                 for g in ghosts:
-                    vectorGhost = [False, False, False, False]
+                    vector_ghost = [False, False, False, False]
                     step = random.randint(0, 3)
                     if step == 0:  # влево
                         if area[g.get_ymat()][g.get_xmat() - 1] != 3:
                             g.move_mat(-1, 0)
-                            vectorGhost[step] = True
+                            vector_ghost[step] = True
                     if step == 1:  # вправо
                         if area[g.get_ymat()][g.get_xmat() + 1] != 3:
                             g.move_mat(1, 0)
-                            vectorGhost[step] = True
+                            vector_ghost[step] = True
                     if step == 2:  # вверх
                         if area[g.get_ymat() - 1][g.get_xmat()] != 3:
                             g.move_mat(0, -1)
-                            vectorGhost[step] = True
+                            vector_ghost[step] = True
                     if step == 3:  # вниз
                         if area[g.get_ymat() + 1][g.get_xmat()] != 3:
                             g.move_mat(0, 1)
-                            vectorGhost[step] = True
-                    g.set_vector(vectorGhost)
+                            vector_ghost[step] = True
+                    g.set_vector(vector_ghost)
 
                 vector = [False, False, False, False]
                 # Отлавливание нажатий клавиш
@@ -354,14 +356,14 @@ def main():
                 if vector[3]:
                     y += speed
                 for g in ghosts:  # Перемещение призраков
-                    vectorGhost = g.get_vector()
-                    if vectorGhost[0]:
+                    vector_ghost = g.get_vector()
+                    if vector_ghost[0]:
                         g.move(speed * (-1), 0)
-                    if vectorGhost[1]:
+                    if vector_ghost[1]:
                         g.move(speed, 0)
-                    if vectorGhost[2]:
+                    if vector_ghost[2]:
                         g.move(0, speed * (-1))
-                    if vectorGhost[3]:
+                    if vector_ghost[3]:
                         g.move(0, speed)
 
                 tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
@@ -384,14 +386,14 @@ def main():
                     vector = [False, False, False, False]
             # Отрисовка
             screen.fill((0, 0, 0))
-            screen.blit(image_map, (0, 0))  # Отрисовка поля
+            screen.blit(image['map'], (0, 0))  # Отрисовка поля
             # Поклеточная отрисовка
             q = 0  # Счётчик для призраков
             for i in range(win_height_cell):
                 for j in range(win_width_cell):
                     if area[i][j] == 2:
                         # Отрисовка призраков
-                        screen.blit(image_ghost, (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
+                        screen.blit(image['ghost'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
                         q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
                         pygame.draw.circle(screen, (255, 240, 220), (10 + 20 * j, 10 + 20 * i), 3)
@@ -400,13 +402,13 @@ def main():
                     if (area[i][j] == 6) and (tickbig % 25 >= 12):  # Отрисовка зерен
                         pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 0)
             if vector[0]:  # Отрисовка pacman-а
-                screen.blit(image_pacman_left, (x - 10, y - 10))
+                screen.blit(image['pacman_left'], (x - 10, y - 10))
             elif vector[2]:
-                screen.blit(image_pacman_up, (x - 10, y - 10))
+                screen.blit(image['pacman_up'], (x - 10, y - 10))
             elif vector[3]:
-                screen.blit(image_pacman_down, (x - 10, y - 10))
+                screen.blit(image['pacman_down'], (x - 10, y - 10))
             else:
-                screen.blit(image_pacman_right, (x - 10, y - 10))
+                screen.blit(image['pacman_right'], (x - 10, y - 10))
 
             f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
             score_text = f2.render("Score   " + str(score), False, (255, 255, 255))   # Текст текущего счета
@@ -415,8 +417,8 @@ def main():
             screen.blit(score_text, (265, 0))  # Вывод текущих очков
             screen.blit(highscore_text, (20, 0))  # Вывод рекорда
             screen.blit(live_text, (20, 480))  # Вывод количества жизней
-            image_restart_mini.set_colorkey((0, 0, 0))  # Отрисовка кнопки сброса
-            screen.blit(image_restart_mini, (205, 2))  # Отрисовка кнопки сброса
+            image['restart_mini'].set_colorkey((0, 0, 0))  # Отрисовка кнопки сброса
+            screen.blit(image['restart_mini'], (205, 2))  # Отрисовка кнопки сброса
             pygame.draw.rect(screen, (255, 255, 255), (184, 5, 4, 13))  # Отрисовка паузы
             pygame.draw.rect(screen, (255, 255, 255), (194, 5, 4, 13))  # Отрисовка паузы
             if pause:
@@ -424,15 +426,15 @@ def main():
                 sc.set_alpha(230)  # Установка уровня прозрачности
                 sc.fill((0, 0, 0))  # Заполнение полупрозрачного фона
                 screen.blit(sc, (0, 0))  # Отрисовка полупрозрачного фона
-                image_restart.set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
-                screen.blit(image_restart, (250, 200))  # Отрисовка кнопки сброса
-                image_pause.set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
-                screen.blit(image_pause, (100, 200))    # Отрисовка кнопки паузы
-                image_restart.set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
+                image['restart'].set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
+                screen.blit(image['restart'], (250, 200))  # Отрисовка кнопки сброса
+                image['pause'].set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
+                screen.blit(image['pause'], (100, 200))    # Отрисовка кнопки паузы
+                image['restart'].set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
                 if volume_on:
-                    screen.blit(image_volume_on, (30, 20))  # Отрисовка кнопки звука (вкл.)
+                    screen.blit(image['volume_on'], (30, 20))  # Отрисовка кнопки звука (вкл.)
                 else:
-                    screen.blit(image_volume_off, (30, 20))  # Отрисовка кнопки звука (выкл.)
+                    screen.blit(image['volume_off'], (30, 20))  # Отрисовка кнопки звука (выкл.)
             pygame.display.update()
 
         # Экран Game Over
