@@ -103,15 +103,15 @@ def reset_area(level):
                 [3, 5, 5, 5, 3, 5, 3, 5, 5, 5, 5, 5, 3, 5, 3, 3, 3, 5, 3],#6
                 [3, 5, 3, 3, 3, 5, 3, 3, 5, 3, 3, 5, 3, 5, 3, 3, 3, 5, 3],#7
                 [3, 5, 5, 5, 5, 5, 3, 3, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 3],#8
-                [3, 3, 5, 3, 3, 5, 5, 5, 5, 5, 5, 3, 3, 5, 3, 3, 3, 3, 3],#9
-                [3, 5, 5, 5, 3, 3, 5, 3, 3, 5, 3, 3, 3, 5, 3, 3, 3, 3, 3],#10
+                [3, 3, 5, 3, 3, 5, 5, 5, 5, 5, 5, 3, 3, 5, 3, 3, 5, 3, 3],#9
+                [3, 5, 5, 5, 3, 3, 5, 3, 3, 5, 3, 3, 3, 5, 3, 3, 5, 3, 3],#10
                 [3, 5, 3, 5, 3, 5, 5, 3, 0, 2, 0, 3, 5, 5, 5, 5, 5, 3, 3],#11
                 [3, 5, 5, 5, 5, 5, 3, 3, 2, 2, 2, 3, 5, 3, 5, 3, 3, 3, 3],#12
-                [3, 5, 3, 5, 3, 3, 5, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 6, 3],#13
-                [3, 5, 5, 5, 5, 3, 5, 3, 3, 3, 3, 3, 5, 3, 5, 3, 3, 3, 3],#14
-                [3, 3, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 3, 3],#15
-                [3, 3, 5, 3, 5, 3, 5, 3, 3, 3, 3, 3, 5, 3, 5, 3, 5, 5, 3],#16
-                [3, 5, 5, 3, 5, 3, 5, 3, 3, 3, 3, 3, 5, 3, 5, 3, 3, 5, 3],#17
+                [3, 5, 3, 5, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 6, 3],#13
+                [3, 5, 5, 5, 5, 3, 5, 5, 5, 5, 3, 3, 5, 3, 5, 3, 3, 3, 3],#14
+                [3, 3, 5, 5, 5, 3, 5, 3, 3, 5, 5, 5, 5, 3, 5, 5, 5, 3, 3],#15
+                [3, 3, 5, 3, 5, 3, 5, 3, 3, 5, 3, 3, 5, 3, 5, 3, 5, 5, 3],#16
+                [3, 5, 5, 3, 5, 3, 5, 3, 5, 5, 3, 3, 5, 3, 5, 3, 3, 5, 3],#17
                 [3, 5, 3, 3, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 3, 3, 5, 3],#18
                 [3, 5, 5, 5, 5, 3, 3, 3, 5, 3, 5, 3, 3, 3, 5, 5, 5, 5, 3],#19
                 [3, 5, 3, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 3, 3, 5, 3],#20
@@ -201,7 +201,13 @@ def main():
     run = True  # Индикатор состояния игры
     game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
     # массив призраков
-    ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]
+    if level == 1:
+        ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
+                  Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
+    if level == 2:
+        ghosts = [Ghost(RED, 9, 10), Ghost(YELLOW, 9, 11), Ghost(GREEN, 8, 11),
+                  Ghost(ORANGE, 10, 11)]
+    # Продолжить игру
 
 
     FPS = 60  # Кадры в секунду
@@ -218,6 +224,8 @@ def main():
     lives = 3  # Количество жизней
     tickbig = 0  # для больших зерен просто забей
     volume_on = True  # Переменная, отвечающая за звук
+    eating = False
+    eattime = 0
     # Загрузка файлов
     image = {
         'restart': pygame.image.load('images/restart.png'),  # Объявление изображения кнопки сброса
@@ -235,7 +243,10 @@ def main():
     # Главный цикл
     while run:
         tickbig +=1
-
+        if eating:
+            eattime += 1
+        if not eating :
+            eattime = 0
         # Экран стартового меню
         if game_status == 0:
             for event in pygame.event.get():
@@ -247,7 +258,11 @@ def main():
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 300) & (mouse_y <= 340):
                         game_status = 1  # Смена статуса на 1 - экран игры
                         area, score, x, y, x_mat, y_mat, lives = reset_area(level)  # Перезапуск
-                        ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
+                        if level == 1:
+                            ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
+                        if level == 2:
+                            ghosts = [Ghost(RED, 9, 10), Ghost(YELLOW, 9, 11), Ghost(GREEN, 8, 11),
+                                      Ghost(ORANGE, 10, 11)]
                     # Продолжить игру
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 380) & (mouse_y <= 420):
                         game_status = 1 # Смена статуса на 1 - экран игры
@@ -342,7 +357,7 @@ def main():
                     cheat = 0
                     level = 1
                     reset = True
-                print(cheat)
+                #print(cheat)
                 if keys[pygame.K_a]:  # Влево
                     if (x_mat == 1) & (y_mat == 12):  # Проверка на телепорт
                         x_mat = 17
@@ -356,6 +371,8 @@ def main():
                     if area[y_mat][x_mat] == 6:  # Поглощение зерен
                         score += 10
                         area[y_mat][x_mat] = 0
+                        eating = True
+
                 if keys[pygame.K_d]:  # Вправо
 
                     if (x_mat == 17) & (y_mat == 12):  # Проверка на телепорт
@@ -370,6 +387,7 @@ def main():
                     if area[y_mat][x_mat] == 6:  # Поглощение зерен
                         score += 10
                         area[y_mat][x_mat] = 0
+                        eating = True
                 if keys[pygame.K_w]:  # Вверх
                     if area[y_mat - 1][x_mat] != 3:  # Коллизия со стенками
                         y_mat -= 1
@@ -380,6 +398,7 @@ def main():
                     if area[y_mat][x_mat] == 6:  # Поглощение зерен
                         score += 10
                         area[y_mat][x_mat] = 0
+                        eating = True
                 if keys[pygame.K_s]:  # Вниз
                     if area[y_mat + 1][x_mat] != 3:  # Коллизия со стенками
                         y_mat += 1
@@ -390,6 +409,7 @@ def main():
                     if area[y_mat][x_mat] == 6:  # Поглощение зерен
                         score += 10
                         area[y_mat][x_mat] = 0
+                        eating = True
                 p_prev_pressed = keys[pygame.K_p]  # Нажата ли клавиша p
                 pause = keys[pygame.K_p]  # Включена ли пауза
             elif pause:  # Если пауза, проверять только кнопку p
@@ -426,15 +446,22 @@ def main():
             # Колизия пакмана и призрака
             for g in ghosts:
                 if (g.get_x() == (x_mat + 1) * 20 - 10) & (g.get_y() == (y_mat + 1) * 20 - 10):
-                    lives, game_status = ghosts[1].killPacman(lives, game_status)
-                    killed = True
-                    time.sleep(1)
-                    killed = False
-                    x_mat = 1
-                    y_mat = 1
-                    x = 30
-                    y = 30
-                    vector = [False, False, False, False]
+                    if not eating :
+                        lives, game_status = ghosts[1].killPacman(lives, game_status)
+                        killed = True
+                        time.sleep(1)
+                        killed = False
+                        x_mat = 1
+                        y_mat = 1
+                        x = 30
+                        y = 30
+                        vector = [False, False, False, False]
+                    if eating :
+                        #здесь нужно переместить призрака в стартовую позицию
+                        score += 400
+                        g.x = 9
+                        g.y = 11
+                        eating = 0
             # Отрисовка
             screen.fill((0, 0, 0))
             for i in range(win_height_cell):
@@ -442,16 +469,26 @@ def main():
                     if area[i][j] == 3:  # Отрисовка стенок
                         pygame.draw.rect(screen, (0, 85, 200),
                                          (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
-
-            #screen.blit(image['map'], (0, 0))  # Отрисовка поля
+            if level == 1:
+                screen.blit(image['map'], (0, 0))  # Отрисовка поля
             # Поклеточная отрисовка
             q = 0  # Счётчик для призраков
+            if eating:
+                if eattime % 300 == 299:
+                    eating = 0
+                    eattime = 0
             for i in range(win_height_cell):
                 for j in range(win_width_cell):
                     if area[i][j] == 2:
-                        # Отрисовка призраков
-                        screen.blit(image['ghost'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
-                        q += 1
+                        if not eating:
+                            # Отрисовка призраков
+                            screen.blit(image['ghost'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
+                            q += 1
+                        if  eating:
+                            # Отрисовка призраков
+                            if (tickbig % 35 >= 12):
+                                screen.blit(image['ghost'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
+                                q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
                         pygame.draw.circle(screen, (255, 240, 220), (10 + 20 * j, 10 + 20 * i), 3)
                     if (area[i][j] == 6) and (tickbig % 25 < 12):  # Отрисовка зерен
@@ -524,7 +561,7 @@ def main():
             pygame.display.update()
 
     # Выход из игры
-    save(area, score, x, y, x_mat, y_mat, highscore, lives)  # Сохранение
+    save(area, score, x, y, x_mat, y_mat, highscore, lives, level)  # Сохранение
     pygame.quit()
     sys.exit()
 
