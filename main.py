@@ -291,7 +291,13 @@ def main():
     area, score, x, y, x_mat, y_mat, highscore, lives, level, points = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
-    max_points_on_level = [188,218]
+    max_points_on_level = [196,218]
+    sum = 0
+    for i in range(25):
+        for j in range(19):
+            if area[i][j]==5 or area[i][j]==6:
+                sum += 1
+    print(sum)
     # массив призраков
     if level == 1:
         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
@@ -618,7 +624,7 @@ def main():
             if max_points_on_level[level-1] == points:
                 game_result_text = "   Victory "
                 game_status = 2
-            #print(points)
+                vector = [False, False, False, False]
         # Экран Game Over/You Win
         if game_status == 2:
             lives = 3
