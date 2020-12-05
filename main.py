@@ -1,8 +1,9 @@
 import sys
 import pygame
-import random
 import time
 import math
+import random
+
 
 class Ghost:
     def __init__(self, clr, x, y):
@@ -42,7 +43,23 @@ class Ghost:
 
     def move(self, pX, pY, area, end, eating):
         self.vector = [False, False, False, False]
-        if (not eating):
+
+        # рассчет расстояния до пакмана
+        dests = [-1] * 4
+        if area[self.y_mat][self.x_mat - 1] != 3:
+            dests[0] = math.sqrt((self.x_mat - 1 - pX) ** 2 + (self.y_mat - pY) ** 2)
+        # вправо
+        if area[self.y_mat][self.x_mat + 1] != 3:
+            dests[1] = math.sqrt((self.x_mat + 1 - pX) ** 2 + (self.y_mat - pY) ** 2)
+        # вверх
+        if area[self.y_mat - 1][self.x_mat] != 3:
+            dests[2] = math.sqrt((self.x_mat - pX) ** 2 + (self.y_mat - 1 - pY) ** 2)
+        # вниз
+        if area[self.y_mat + 1][self.x_mat] != 3:
+            dests[3] = math.sqrt((self.x_mat - pX) ** 2 + (self.y_mat + 1 - pY) ** 2)
+
+        if not eating:
+            Vector = 20
             if end - self.start <= 5:
                 step = random.randint(0, 3)
                 if step == 0:  # влево
@@ -59,32 +76,24 @@ class Ghost:
                         self.vector[step] = True
 
             if (end - self.start <= 12) and (end - self.start > 5):
-                dests = [-1]*4
-                minVector = 20
                 min = 100000
-                # влево
-                if area[self.y_mat][self.x_mat-1] != 3:
-                    dests[0] = math.sqrt((self.x_mat-1-pX)**2+(self.y_mat-pY)**2)
-                # вправо
-                if area[self.y_mat][self.x_mat+1] != 3:
-                    dests[1] = math.sqrt((self.x_mat+1-pX)**2+(self.y_mat-pY)**2)
-                # вверх
-                if area[self.y_mat-1][self.x_mat] != 3:
-                    dests[2] = math.sqrt((self.x_mat-pX)**2+(self.y_mat-1-pY)**2)
-                # вниз
-                if area[self.y_mat+1][self.x_mat] != 3:
-                    dests[3] = math.sqrt((self.x_mat-pX)**2+(self.y_mat+1-pY)**2)
-
                 for d in range(0, 4):
                     if (dests[d] <= min) and (dests[d] != -1):
                         min = dests[d]
-                        minVector = d
-                self.vector[minVector] = True
+                        Vector = d
+                self.vector[Vector] = True
 
             if end - self.start > 12:
                 self.start = time.monotonic()
         if eating:
-            pass
+            Vector = 20
+            max = -1
+            for d in range(0, 4):
+                if (dests[d] >= max) and (dests[d] != -1):
+                    max = dests[d]
+                    Vector = d
+            self.vector[Vector] = True
+
 
         if self.vector[0]:
             self.x_mat -= 1
@@ -139,7 +148,7 @@ def reset_area(level):
                 [3, 3, 3, 3, 5, 3, 6, 5, 5, 3, 5, 5, 6, 3, 5, 3, 3, 3, 3],
                 [3, 3, 3, 3, 5, 3, 3, 3, 5, 3, 5, 3, 3, 3, 5, 3, 3, 3, 3],
                 [3, 3, 3, 3, 5, 3, 5, 5, 5, 5, 5, 5, 5, 3, 5, 3, 3, 3, 3],
-                [3, 3, 3, 3, 5, 3, 5, 3, 3, 5, 3, 3, 5, 3, 5, 3, 3, 3, 3],
+                [3, 3, 3, 3, 5, 3, 5, 3, 3, 4, 3, 3, 5, 3, 5, 3, 3, 3, 3],
                 [3, 3, 3, 3, 5, 3, 5, 3, 0, 2, 0, 3, 5, 3, 5, 3, 3, 3, 3],
                 [3, 6, 5, 5, 5, 5, 5, 3, 2, 2, 2, 3, 5, 5, 5, 5, 5, 6, 3],
                 [3, 3, 3, 3, 5, 3, 5, 3, 3, 3, 3, 3, 5, 3, 5, 3, 3, 3, 3],
@@ -156,32 +165,32 @@ def reset_area(level):
                 [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
                 ]
     elif level == 2:
-        # 0 - пусто 1 - пакмен 2 - призрак 3 - стена      5 - зерно
-        area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  #1# Инициализация поля
-                [3, 1, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 3],  #2
-                [3, 5, 3, 3, 3, 3, 5, 3, 5, 3, 5, 3, 3, 3, 3, 5, 3, 5, 3],#3
-                [3, 5, 3, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 3, 5, 3, 5, 3],#4
-                [3, 5, 3, 5, 3, 5, 3, 5, 3, 3, 3, 3, 3, 5, 5, 5, 3, 5, 3],#5
-                [3, 5, 5, 5, 3, 5, 3, 5, 5, 5, 5, 5, 3, 5, 3, 3, 3, 5, 3],#6
-                [3, 5, 3, 3, 3, 5, 3, 3, 5, 3, 3, 5, 3, 5, 3, 3, 3, 5, 3],#7
-                [3, 5, 5, 5, 5, 5, 3, 3, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 3],#8
-                [3, 3, 5, 3, 3, 5, 5, 5, 5, 5, 5, 3, 3, 5, 3, 3, 5, 3, 3],#9
-                [3, 5, 5, 5, 3, 3, 5, 3, 3, 5, 3, 3, 3, 5, 3, 3, 5, 3, 3],#10
-                [3, 5, 3, 5, 3, 5, 5, 3, 0, 2, 0, 3, 5, 5, 5, 5, 5, 3, 3],#11
-                [3, 5, 5, 5, 5, 5, 3, 3, 2, 2, 2, 3, 5, 3, 5, 3, 3, 3, 3],#12
-                [3, 5, 3, 5, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 6, 3],#13
-                [3, 5, 5, 5, 5, 3, 5, 5, 5, 5, 3, 3, 5, 3, 5, 3, 3, 3, 3],#14
-                [3, 3, 5, 5, 5, 3, 5, 3, 3, 5, 5, 5, 5, 3, 5, 5, 5, 3, 3],#15
-                [3, 3, 5, 3, 5, 3, 5, 3, 3, 5, 3, 3, 5, 3, 5, 3, 5, 5, 3],#16
-                [3, 5, 5, 3, 5, 3, 5, 3, 5, 5, 3, 3, 5, 3, 5, 3, 3, 5, 3],#17
-                [3, 5, 3, 3, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 3, 3, 5, 3],#18
-                [3, 5, 5, 5, 5, 3, 3, 3, 5, 3, 5, 3, 3, 3, 5, 5, 5, 5, 3],#19
-                [3, 5, 3, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 3, 3, 5, 3],#20
-                [3, 3, 3, 5, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 3, 5, 3],#21
-                [3, 5, 5, 5, 5, 5, 5, 3, 5, 3, 5, 5, 5, 3, 5, 5, 5, 5, 3],#22
-                [3, 5, 3, 3, 5, 3, 3, 3, 6, 3, 3, 5, 3, 3, 3, 3, 3, 5, 3],#23
-                [3, 6, 5, 3, 5, 5, 5, 3, 3, 3, 3, 5, 5, 5, 5, 5, 3, 6, 3],#24
-                [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]#25
+        # 0 - пусто 1 - пакмен 2 - призрак 3 - стена 4 - стена     5 - зерно
+        area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # 1   Инициализация поля
+                [3, 1, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 3],  # 2
+                [3, 5, 3, 3, 3, 3, 5, 3, 5, 3, 5, 3, 3, 3, 3, 5, 3, 5, 3],  # 3
+                [3, 5, 3, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 3, 5, 3, 5, 3],  # 4
+                [3, 5, 3, 5, 3, 5, 3, 5, 3, 3, 3, 3, 3, 5, 5, 5, 3, 5, 3],  # 5
+                [3, 5, 5, 5, 3, 5, 3, 5, 5, 5, 5, 5, 3, 5, 3, 3, 3, 5, 3],  # 6
+                [3, 5, 3, 3, 3, 5, 3, 3, 5, 3, 3, 5, 3, 5, 3, 3, 3, 5, 3],  # 7
+                [3, 5, 5, 5, 5, 5, 3, 3, 5, 3, 5, 5, 5, 5, 5, 5, 5, 5, 3],  # 8
+                [3, 3, 5, 3, 3, 5, 5, 5, 5, 5, 5, 3, 3, 5, 3, 3, 5, 3, 3],  # 9
+                [3, 5, 5, 5, 3, 3, 5, 3, 3, 5, 3, 3, 3, 5, 3, 3, 5, 3, 3],  # 10
+                [3, 5, 3, 5, 3, 5, 5, 3, 0, 2, 0, 3, 5, 5, 5, 5, 5, 3, 3],  # 11
+                [3, 5, 5, 5, 5, 5, 3, 3, 2, 2, 2, 3, 5, 3, 5, 3, 3, 3, 3],  # 12
+                [3, 5, 3, 5, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 6, 3],  # 13
+                [3, 5, 5, 5, 5, 3, 5, 5, 5, 5, 3, 3, 5, 3, 5, 3, 3, 3, 3],  # 14
+                [3, 3, 5, 5, 5, 3, 5, 3, 3, 5, 5, 5, 5, 3, 5, 5, 5, 3, 3],  # 15
+                [3, 3, 5, 3, 5, 3, 5, 3, 3, 5, 3, 3, 5, 3, 5, 3, 5, 5, 3],  # 16
+                [3, 5, 5, 3, 5, 3, 5, 3, 5, 5, 3, 3, 5, 3, 5, 3, 3, 5, 3],  # 17
+                [3, 5, 3, 3, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 3, 3, 5, 3],  # 18
+                [3, 5, 5, 5, 5, 3, 3, 3, 5, 3, 5, 3, 3, 3, 5, 5, 5, 5, 3],  # 19
+                [3, 5, 3, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 3, 3, 5, 3],  # 20
+                [3, 3, 3, 5, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 3, 5, 3],  # 21
+                [3, 5, 5, 5, 5, 5, 5, 3, 5, 3, 5, 5, 5, 3, 5, 5, 5, 5, 3],  # 22
+                [3, 5, 3, 3, 5, 3, 3, 3, 6, 3, 3, 5, 3, 3, 3, 3, 3, 5, 3],  # 23
+                [3, 6, 5, 3, 5, 5, 5, 3, 3, 3, 3, 5, 5, 5, 5, 5, 3, 6, 3],  # 24
+                [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]  # 25
                 ]
 
     x = 30  # x pacman-а
@@ -311,10 +320,10 @@ def main():
     }
     # Главный цикл
     while run:
-        tickbig +=1
+        tickbig += 1
         if eating:
             eattime += 1
-        if not eating :
+        if not eating:
             eattime = 0
         # Экран стартового меню
         if game_status == 0:
@@ -328,18 +337,19 @@ def main():
                         game_status = 1  # Смена статуса на 1 - экран игры
                         area, score, x, y, x_mat, y_mat, lives, points = reset_area(level)  # Перезапуск
                         if level == 1:
-                            ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
+                            ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
+                                      Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
                         if level == 2:
                             ghosts = [Ghost(RED, 9, 10), Ghost(YELLOW, 9, 11), Ghost(GREEN, 8, 11),
                                       Ghost(ORANGE, 10, 11)]
                     # Продолжить игру
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 380) & (mouse_y <= 420):
-                        game_status = 1 # Смена статуса на 1 - экран игры
+                        game_status = 1  # Смена статуса на 1 - экран игры
             pygame.draw.rect(screen, (0, 255, 0), (100, 300, 190, 40))  # Кнопка старта новый игры
             f1 = pygame.font.Font("font.ttf", 100)  # Объявление шрифта
             f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
             f3 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
-            start_new_text = f2.render("New game   " , False, (255, 255, 255))  # Текст на кнопке старта новый игры
+            start_new_text = f2.render("New game   ", False, (255, 255, 255))  # Текст на кнопке старта новый игры
             game_name_text = f1.render("PACMAN   ", False, (255, 240, 0))  # Текст PACMAN
             highscore_text = f2.render("Highscore  " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
 
@@ -364,7 +374,6 @@ def main():
                 if event.type == pygame.QUIT:
                     run = False
 
-
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
                     # Обработка паузы, сброса и продолжения игры через мышку
@@ -385,7 +394,8 @@ def main():
             if reset:
                 reset = False
                 area, score, x, y, x_mat, y_mat, lives, points = reset_area(level)
-                ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
+                ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
+                          Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
             if (tick == 0) & (not pause) & (not killed):
                 # Изменение координат призраков
                 for g in ghosts:
@@ -408,12 +418,12 @@ def main():
                     cheat = 0
                     level = 1
                     reset = True
-                #print(cheat)
+                # print(cheat)
                 if keys[pygame.K_a]:  # Влево
                     if (x_mat == 1) & (y_mat == 12):  # Проверка на телепорт
                         x_mat = 17
                         x += 16 * len_side_cell
-                    elif area[y_mat][x_mat - 1] != 3:  # Коллизия со стенками
+                    elif area[y_mat][x_mat - 1] not in [3, 4]:  # Коллизия со стенками
                         x_mat -= 1
                         vector[0] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
@@ -431,7 +441,7 @@ def main():
                     if (x_mat == 17) & (y_mat == 12):  # Проверка на телепорт
                         x_mat = 1
                         x -= 16 * len_side_cell
-                    elif area[y_mat][x_mat + 1] != 3:  # Коллизия со стенками
+                    elif area[y_mat][x_mat + 1] not in [3, 4]:  # Коллизия со стенками
                         x_mat += 1
                         vector[1] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
@@ -444,7 +454,7 @@ def main():
                         area[y_mat][x_mat] = 0
                         eating = True
                 if keys[pygame.K_w]:  # Вверх
-                    if area[y_mat - 1][x_mat] != 3:  # Коллизия со стенками
+                    if area[y_mat - 1][x_mat] not in [3, 4]:  # Коллизия со стенками
                         y_mat -= 1
                         vector[2] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
@@ -457,7 +467,7 @@ def main():
                         area[y_mat][x_mat] = 0
                         eating = True
                 if keys[pygame.K_s]:  # Вниз
-                    if area[y_mat + 1][x_mat] != 3:  # Коллизия со стенками
+                    if area[y_mat + 1][x_mat] not in [3, 4]:  # Коллизия со стенками
                         y_mat += 1
                         vector[3] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
@@ -486,15 +496,15 @@ def main():
                 if vector[3]:
                     y += speed
                 for g in ghosts:  # Перемещение призраков
-                   vectorG = g.get_vector()
-                   if vectorG[0]:
-                       g.move_mat(speed * (-1), 0)
-                   if vectorG[1]:
-                       g.move_mat(speed, 0)
-                   if vectorG[2]:
-                       g.move_mat(0, speed * (-1))
-                   if vectorG[3]:
-                       g.move_mat(0, speed)
+                    vectorG = g.get_vector()
+                    if vectorG[0]:
+                        g.move_mat(speed * (-1), 0)
+                    if vectorG[1]:
+                        g.move_mat(speed, 0)
+                    if vectorG[2]:
+                        g.move_mat(0, speed * (-1))
+                    if vectorG[3]:
+                        g.move_mat(0, speed)
 
                 tick = (1 + tick) % (len_side_cell / speed)  # Следующий тик
 
@@ -513,10 +523,10 @@ def main():
                         x = 30
                         y = 30
                         vector = [False, False, False, False]
-                        for i in ghosts: # возврат всех призраков
+                        for i in ghosts:  # возврат всех призраков
                             i.setKilled()
                     if eating:
-                        score += 400
+                        score += 150
                         g.setKilled() # возврат съеденного призрака
             # Отрисовка
             screen.fill((0, 0, 0))
