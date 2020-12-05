@@ -1,5 +1,6 @@
 import sys
 import pygame
+import random
 import time
 import math
 
@@ -13,6 +14,7 @@ class Ghost:
         self.base_x = x
         self.base_y = y
         self.vector = [False, False, False, False]
+        self.start = time.monotonic()
 
     def get_x(self):
         return self.x
@@ -38,30 +40,51 @@ class Ghost:
     def get_color(self):
         return self.color
 
-    def move(self, pX, pY, area):
-        # destination = math.sqrt((self.x-pX)**2+(self.y-pY)**2)
+    def move(self, pX, pY, area, end, eating):
         self.vector = [False, False, False, False]
-        dests = [-1]*4
-        minVector = 20
-        min = 100000
-        # влево
-        if area[self.y_mat][self.x_mat-1] != 3:
-            dests[0] = math.sqrt((self.x_mat-1-pX)**2+(self.y_mat-pY)**2)
-        # вправо
-        if area[self.y_mat][self.x_mat+1] != 3:
-            dests[1] = math.sqrt((self.x_mat+1-pX)**2+(self.y_mat-pY)**2)
-        # вверх
-        if area[self.y_mat-1][self.x_mat] != 3:
-            dests[2] = math.sqrt((self.x_mat-pX)**2+(self.y_mat-1-pY)**2)
-        # вниз
-        if area[self.y_mat+1][self.x_mat] != 3:
-            dests[3] = math.sqrt((self.x_mat-pX)**2+(self.y_mat+1-pY)**2)
+        if (not eating):
+            if end - self.start <= 5:
+                step = random.randint(0, 3)
+                if step == 0:  # влево
+                    if area[self.y_mat][self.x_mat - 1] != 3:
+                        self.vector[step] = True
+                if step == 1:  # вправо
+                    if area[self.y_mat][self.x_mat + 1] != 3:
+                        self.vector[step] = True
+                if step == 2:  # вверх
+                    if area[self.y_mat - 1][self.x_mat] != 3:
+                        self.vector[step] = True
+                if step == 3:  # вниз
+                    if area[self.y_mat + 1][self.x_mat] != 3:
+                        self.vector[step] = True
 
-        for d in range(0, 4):
-            if (dests[d] <= min) and (dests[d] != -1):
-                min = dests[d]
-                minVector = d
-        self.vector[minVector] = True
+            if (end - self.start <= 12) and (end - self.start > 5):
+                dests = [-1]*4
+                minVector = 20
+                min = 100000
+                # влево
+                if area[self.y_mat][self.x_mat-1] != 3:
+                    dests[0] = math.sqrt((self.x_mat-1-pX)**2+(self.y_mat-pY)**2)
+                # вправо
+                if area[self.y_mat][self.x_mat+1] != 3:
+                    dests[1] = math.sqrt((self.x_mat+1-pX)**2+(self.y_mat-pY)**2)
+                # вверх
+                if area[self.y_mat-1][self.x_mat] != 3:
+                    dests[2] = math.sqrt((self.x_mat-pX)**2+(self.y_mat-1-pY)**2)
+                # вниз
+                if area[self.y_mat+1][self.x_mat] != 3:
+                    dests[3] = math.sqrt((self.x_mat-pX)**2+(self.y_mat+1-pY)**2)
+
+                for d in range(0, 4):
+                    if (dests[d] <= min) and (dests[d] != -1):
+                        min = dests[d]
+                        minVector = d
+                self.vector[minVector] = True
+
+            if end - self.start > 12:
+                self.start = time.monotonic()
+        if eating:
+            pass
 
         if self.vector[0]:
             self.x_mat -= 1
@@ -359,7 +382,7 @@ def main():
             if (tick == 0) & (not pause) & (not killed):
                 # Изменение координат призраков
                 for g in ghosts:
-                    g.move(x_mat, y_mat, area)
+                    g.move(x_mat, y_mat, area, time.monotonic(), eating)
 
                 vector = [False, False, False, False]
                 # Отлавливание нажатий клавиш
@@ -467,7 +490,7 @@ def main():
             # Колизия пакмана и призрака
             for g in ghosts:
                 if (g.get_x() == (x_mat + 1) * 20 - 10) & (g.get_y() == (y_mat + 1) * 20 - 10):
-                    if not eating :
+                    if not eating:
                         lives, game_status = ghosts[1].killPacman(lives, game_status)
                         time.sleep(1)
                         x_mat = 1
@@ -477,9 +500,8 @@ def main():
                         vector = [False, False, False, False]
                         for i in ghosts: # возврат всех призраков
                             i.setKilled()
-                    if eating :
+                    if eating:
                         score += 400
-                        time.sleep(1)
                         g.setKilled() # возврат съеденного призрака
             # Отрисовка
             screen.fill((0, 0, 0))
