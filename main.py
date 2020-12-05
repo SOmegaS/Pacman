@@ -135,6 +135,7 @@ def save(area, score, x, y, x_mat, y_mat, highscore, lives, level, points):  # �
     f.write(str(points) + '\n')
     f.close()
 
+
 def reset_area(level):
     if level == 1:
         area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # Инициализация поля
@@ -229,7 +230,7 @@ def init(win_height_cell):  # Инициализация данных из со�
                 [3, 3, 3, 3, 5, 3, 6, 5, 5, 3, 5, 5, 6, 3, 5, 3, 3, 3, 3],
                 [3, 3, 3, 3, 5, 3, 3, 3, 5, 3, 5, 3, 3, 3, 5, 3, 3, 3, 3],
                 [3, 3, 3, 3, 5, 3, 5, 5, 5, 5, 5, 5, 5, 3, 5, 3, 3, 3, 3],
-                [3, 3, 3, 3, 5, 3, 5, 3, 3, 5, 3, 3, 5, 3, 5, 3, 3, 3, 3],
+                [3, 3, 3, 3, 5, 3, 5, 3, 3, 4, 3, 3, 5, 3, 5, 3, 3, 3, 3],
                 [3, 3, 3, 3, 5, 3, 5, 3, 0, 2, 0, 3, 5, 3, 5, 3, 3, 3, 3],
                 [3, 6, 5, 5, 5, 5, 5, 3, 2, 2, 2, 3, 5, 5, 5, 5, 5, 6, 3],
                 [3, 3, 3, 3, 5, 3, 5, 3, 3, 3, 3, 3, 5, 3, 5, 3, 3, 3, 3],
@@ -289,9 +290,8 @@ def main():
     pygame.display.set_caption("Pacman")  # Имя окна приложения
     area, score, x, y, x_mat, y_mat, highscore, lives, level, points = init(win_height_cell)
     speed = 2  # Скорость pacman-а
-    #run = True  # Индикатор состояния игры
     game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
-    max_points_on_leve = [188,218]
+    max_points_on_level = [188,218]
     # массив призраков
     if level == 1:
         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
@@ -300,7 +300,6 @@ def main():
         ghosts = [Ghost(RED, 9, 10), Ghost(YELLOW, 9, 11), Ghost(GREEN, 8, 11),
                   Ghost(ORANGE, 10, 11)]
     # Продолжить игру
-
 
     FPS = 60  # Кадры в секунду
     clock = pygame.time.Clock()
@@ -324,6 +323,7 @@ def main():
         'restart_mini': pygame.image.load('images/restart_mini.png'),  # Объявление изображения маленькой кнопки сброса
         'pause': pygame.image.load('images/pause.png'),  # Объявление изображения кнопки паузы
         'map': pygame.image.load('images/map.png'),  # Объявление изображения поля
+        'map2': pygame.image.load('images/map2.png'),  # Объявление изображения поля уровня 2
         'volume_on': pygame.image.load('images/Volume_on.png'),  # Объявление изображения кнопки звука (вкл.)
         'volume_off': pygame.image.load('images/Volume_off.png'),  # Объявление изображения кнопки звука (выкл.)
         'pacman_right': pygame.image.load('images/pacman_right.gif'),  # Загрузка изображения пакмена
@@ -331,7 +331,8 @@ def main():
         'pacman_up': pygame.image.load('images/pacman_up.gif'),
         'pacman_down': pygame.image.load('images/pacman_down.gif'),
         'ghost': pygame.image.load('images/angry.gif'),  # Загрузка изображения призрака
-        'ghost_scared': pygame.image.load('images/ghost.gif')  # Загрузка изображения призрака
+        'ghost_scared': pygame.image.load('images/ghost.gif'),  # Загрузка изображения призрака
+        'big_seed': pygame.image.load('images/big_seed.png')  # Загрузка большого зерна-снежинки
     }
     # Главный цикл
     while run[0]:
@@ -366,19 +367,21 @@ def main():
             f3 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
             start_new_text = f2.render("New game   ", False, (255, 255, 255))  # Текст на кнопке старта новый игры
             game_name_text = f1.render("PACMAN   ", False, (255, 240, 0))  # Текст PACMAN
-            highscore_text = f2.render("Highscore  " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
+            highscore_text = f2.render("Highscore       " + str(highscore), False,
+                                       (190, 235, 255))  # Текст рекордного счета
 
-            created_by_text = f3.render("Created    by    S101", False, (190, 235, 255))  # Авторы
+            created_by_text = f3.render("Created    by promS101", False, (190, 235, 255))  # Авторы
             screen.blit(start_new_text, (115, 301))
             screen.blit(game_name_text, (30, 20))
-            screen.blit(created_by_text, (108, 100))
-            screen.blit(highscore_text, (25, 180))
+            screen.blit(created_by_text, (88, 100))
+            screen.blit(highscore_text, (45, 180))
             if score != 0:
                 pygame.draw.rect(screen, (0, 255, 0), (100, 380, 190, 40))  # Кнопка продолжить игру
                 continue_text = f2.render("Continue   ", False, (255, 255, 255))  # Текст на кнопке продолжить игру
-                score_text = f2.render("Score                    " + str(score), False, (190, 235, 255))  # Текст счета
+                score_text = f2.render("Score                         " + str(score), False,
+                                       (190, 235, 255))  # Текст счета
                 screen.blit(continue_text, (107, 381))
-                screen.blit(score_text, (25, 220))
+                screen.blit(score_text, (45, 220))
 
             pygame.display.update()
         # Экран самой игры
@@ -550,6 +553,8 @@ def main():
                                          (0 + len_side_cell * j, 0 + len_side_cell * i, len_side_cell, len_side_cell))
             if level == 1:
                 screen.blit(image['map'], (0, 0))  # Отрисовка поля
+            elif level == 2:
+                screen.blit(image['map2'], (0, 0))  # Отрисовка поля
             # Поклеточная отрисовка
             q = 0  # Счётчик для призраков
             if eating:
@@ -570,9 +575,9 @@ def main():
                                 q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
                         pygame.draw.circle(screen, (255, 240, 220), (10 + 20 * j, 10 + 20 * i), 3)
-                    if (area[i][j] == 6) and (tickbig % 25 < 12):  # Отрисовка зерен
-                        pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 6)
-                    if (area[i][j] == 6) and (tickbig % 25 >= 12):  # Отрисовка зерен
+                    if (area[i][j] == 6) and (tickbig % 25 < 12):  # Отрисовка больших зерен
+                        screen.blit(image['big_seed'], (20 * j, 20 * i))
+                    if (area[i][j] == 6) and (tickbig % 25 >= 12):  # Отрисовка больших зерен
                         pygame.draw.circle(screen, (255, 230, 0), (10 + 20 * j, 10 + 20 * i), 0)
             if vector[0]:  # Отрисовка pacman-а
                 screen.blit(image['pacman_left'], (x - 10, y - 10))
@@ -610,7 +615,7 @@ def main():
                     screen.blit(image['volume_off'], (30, 20))  # Отрисовка кнопки звука (выкл.)
             pygame.display.update()
             # Победа
-            if max_points_on_leve[level] == points :
+            if max_points_on_level[level] == points:
                 game_result_text = "   Victory "
                 game_status = 2
             #print(points)
@@ -630,7 +635,7 @@ def main():
 
             # Отрисовка
             screen.fill((0, 0, 0))
-            pygame.draw.rect(screen, (0, 255, 0), (100, 340, 190, 40)) # Кнопка рестарта
+            pygame.draw.rect(screen, (0, 255, 0), (100, 340, 190, 40))  # Кнопка рестарта
             f1 = pygame.font.Font("font.ttf", 70)  # Объявление шрифта
             f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
             restart_text = f2.render("New game   ", False, (255, 255, 255))  # Текст на кнопке рестарта
