@@ -271,7 +271,7 @@ def play_music(run):  # Проигрывание музыки
     while run[0]:
         if timer == music_time:
             timer = 0
-            pygame.mixer.music.load('music/Arstotzkian_anthem.mp3')  # Добавление в очередь файлов с музыкой
+            pygame.mixer.music.load('music/Arstotzkian_anthem.ogg')  # Добавление в очередь файлов с музыкой
             pygame.mixer.music.play()  # Проигрывание плейлиста
         timer += 1
         time.sleep(1)
