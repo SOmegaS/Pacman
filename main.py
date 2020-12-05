@@ -110,7 +110,7 @@ class Ghost:
         return lives, game_status
 
 
-def save(area, score, x, y, x_mat, y_mat, highscore, lives, level):  # Сохранение
+def save(area, score, x, y, x_mat, y_mat, highscore, lives, level, points):  # Сохранение
     f = open('memo.txt', 'w')  # Файл сохранения
     for i in range(len(area)):  # Запись поля
         for j in range(len(area[0])):
@@ -123,7 +123,8 @@ def save(area, score, x, y, x_mat, y_mat, highscore, lives, level):  # Сохр�
     f.write(str(y_mat) + '\n')  # Запись y pacman-а в массиве поля
     f.write(str(highscore) + '\n')  # Запись рекорда
     f.write(str(lives) + '\n')  # Запись жизней
-    f.write(str(level) + '\n')  # Запись жизней
+    f.write(str(level) + '\n')  # Запись level
+    f.write(str(points) + '\n')
 
 
 def reset_area(level):
@@ -189,7 +190,9 @@ def reset_area(level):
     y_mat = 1  # y pacman-а в массиве
     score = 0  # Счет
     lives = 3
-    return area, score, x, y, x_mat, y_mat, lives
+    points = 0
+    game_result_text = "Game Over"
+    return area, score, x, y, x_mat, y_mat, lives, points
 
 
 def init(win_height_cell):  # Инициализация данных из сохранения
@@ -206,6 +209,7 @@ def init(win_height_cell):  # Инициализация данных из со�
         highscore = int(f.readline())  # Считывание рекорда
         lives = int(f.readline())  # Считывание жизней
         level = int(f.readline())   # Считывание номера уровня
+        points = int(f.readline())  # Считывание номера уровня
     except FileNotFoundError:  # Ловим ошибку несуществования файла сохранения
         area = [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],  # Инициализация поля
                 [3, 1, 5, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 5, 6, 3],
@@ -241,14 +245,16 @@ def init(win_height_cell):  # Инициализация данных из со�
         lives = 3
         highscore = 0  # Рекорд
         level = 1
-    return area, score, x, y, x_mat, y_mat, highscore, lives, level
+        points = 0
+        game_result_text = "Game Over"
+    return area, score, x, y, x_mat, y_mat, highscore, lives, level, points
 
 
 RED = 255, 0, 0
 ORANGE = 255, 153, 0
 YELLOW = 251, 255, 0
 GREEN = 0, 255, 0
-
+game_result_text = "Game Over"
 
 def main():
     pygame.init()
@@ -257,10 +263,11 @@ def main():
     win_height_cell = 25  # Количество клеток по длине окна
     screen = pygame.display.set_mode((len_side_cell * win_width_cell, len_side_cell * win_height_cell))
     pygame.display.set_caption("Pacman")  # Имя окна приложения
-    area, score, x, y, x_mat, y_mat, highscore, lives, level = init(win_height_cell)
+    area, score, x, y, x_mat, y_mat, highscore, lives, level, points = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     run = True  # Индикатор состояния игры
     game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
+    max_points_on_leve = [188,218]
     # массив призраков
     if level == 1:
         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
@@ -319,7 +326,7 @@ def main():
                     # Старт новой игры
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 300) & (mouse_y <= 340):
                         game_status = 1  # Смена статуса на 1 - экран игры
-                        area, score, x, y, x_mat, y_mat, lives = reset_area(level)  # Перезапуск
+                        area, score, x, y, x_mat, y_mat, lives, points = reset_area(level)  # Перезапуск
                         if level == 1:
                             ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
                         if level == 2:
@@ -334,19 +341,19 @@ def main():
             f3 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
             start_new_text = f2.render("New game   " , False, (255, 255, 255))  # Текст на кнопке старта новый игры
             game_name_text = f1.render("PACMAN   ", False, (255, 240, 0))  # Текст PACMAN
-            highscore_text = f2.render("Highscore       " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
+            highscore_text = f2.render("Highscore  " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
 
-            created_by_text = f3.render("Created    by-by       :D", False, (190, 235, 255))  # Авторы
+            created_by_text = f3.render("Created    by    S101", False, (190, 235, 255))  # Авторы
             screen.blit(start_new_text, (115, 301))
             screen.blit(game_name_text, (30, 20))
-            screen.blit(created_by_text, (88, 100))
-            screen.blit(highscore_text, (45, 180))
+            screen.blit(created_by_text, (108, 100))
+            screen.blit(highscore_text, (25, 180))
             if score != 0:
                 pygame.draw.rect(screen, (0, 255, 0), (100, 380, 190, 40))  # Кнопка продолжить игру
                 continue_text = f2.render("Continue   ", False, (255, 255, 255))  # Текст на кнопке продолжить игру
-                score_text = f2.render("Score                         " + str(score), False, (190, 235, 255))  # Текст счета
+                score_text = f2.render("Score                    " + str(score), False, (190, 235, 255))  # Текст счета
                 screen.blit(continue_text, (107, 381))
-                screen.blit(score_text, (45, 220))
+                screen.blit(score_text, (25, 220))
 
             pygame.display.update()
         # Экран самой игры
@@ -377,7 +384,7 @@ def main():
                             volume_on = True
             if reset:
                 reset = False
-                area, score, x, y, x_mat, y_mat, lives = reset_area(level)
+                area, score, x, y, x_mat, y_mat, lives, points = reset_area(level)
                 ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
             if (tick == 0) & (not pause) & (not killed):
                 # Изменение координат призраков
@@ -411,9 +418,11 @@ def main():
                         vector[0] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
                         score += 5
+                        points += 1
                         area[y_mat][x_mat] = 0
                     if area[y_mat][x_mat] == 6:  # Поглощение зерен
                         score += 10
+                        points += 1
                         area[y_mat][x_mat] = 0
                         eating = True
 
@@ -427,9 +436,11 @@ def main():
                         vector[1] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
                         score += 5
+                        points += 1
                         area[y_mat][x_mat] = 0
                     if area[y_mat][x_mat] == 6:  # Поглощение зерен
                         score += 10
+                        points += 1
                         area[y_mat][x_mat] = 0
                         eating = True
                 if keys[pygame.K_w]:  # Вверх
@@ -438,9 +449,11 @@ def main():
                         vector[2] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
                         score += 5
+                        points += 1
                         area[y_mat][x_mat] = 0
                     if area[y_mat][x_mat] == 6:  # Поглощение зерен
                         score += 10
+                        points += 1
                         area[y_mat][x_mat] = 0
                         eating = True
                 if keys[pygame.K_s]:  # Вниз
@@ -449,9 +462,11 @@ def main():
                         vector[3] = True
                     if area[y_mat][x_mat] == 5:  # Поглощение зерен
                         score += 5
+                        points += 1
                         area[y_mat][x_mat] = 0
                     if area[y_mat][x_mat] == 6:  # Поглощение зерен
                         score += 10
+                        points += 1
                         area[y_mat][x_mat] = 0
                         eating = True
                 p_prev_pressed = keys[pygame.K_p]  # Нажата ли клавиша p
@@ -545,7 +560,7 @@ def main():
             else:
                 screen.blit(image['pacman_right'], (x - 10, y - 10))
 
-            f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
+            f2 = pygame.font.Font("font.ttf", 15)  # Объявление шрифта
             score_text = f2.render("Score   " + str(score), False, (255, 255, 255))   # Текст текущего счета
             highscore_text = f2.render("Highscore   " + str(highscore), False, (255, 255, 255))  # Текст рекордного счета
             live_text = f2.render("Lives   " + str(lives), False, (230, 230, 255))  # Текст количестка жизней
@@ -571,8 +586,12 @@ def main():
                 else:
                     screen.blit(image['volume_off'], (30, 20))  # Отрисовка кнопки звука (выкл.)
             pygame.display.update()
-
-        # Экран Game Over
+            # Победа
+            if max_points_on_leve[level] == points :
+                game_result_text = "   Victory "
+                game_status = 2
+            #print(points)
+        # Экран Game Over/You Win
         if game_status == 2:
             lives = 3
             for event in pygame.event.get():
@@ -583,7 +602,7 @@ def main():
                     # Обработка старта новый игры
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 340) & (mouse_y <= 380):
                         game_status = 1  # Смена статуса на 1 - экран игры
-                        area, score, x, y, x_mat, y_mat, lives = reset_area(level)  # Перезапуск карты
+                        area, score, x, y, x_mat, y_mat, lives, points = reset_area(level)  # Перезапуск карты
                         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
 
             # Отрисовка
@@ -592,17 +611,17 @@ def main():
             f1 = pygame.font.Font("font.ttf", 70)  # Объявление шрифта
             f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
             restart_text = f2.render("New game   ", False, (255, 255, 255))  # Текст на кнопке рестарта
-            gameover_text = f1.render("Game Over   ", False, (255, 0, 0))  # Текст Game Over
-            highscore_text = f2.render("Highscore       " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
-            score_text = f2.render("Score                         " + str(score), False, (190, 235, 255))  # Текст счета
+            gameover_text = f1.render(game_result_text, False, (255, 0, 0))  # Текст Game Over
+            highscore_text = f2.render("Highscore    " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
+            score_text = f2.render("Score                     " + str(score), False, (190, 235, 255))  # Текст счета
             screen.blit(restart_text, (115, 341))  # Отрисовка текста рестарт
             screen.blit(gameover_text, (30, 60))  # Отрисовка текста завершения игры
-            screen.blit(highscore_text, (45, 180))  # Отрисовка рекорда
-            screen.blit(score_text, (45, 220))  # Отрисовка счета
+            screen.blit(highscore_text, (25, 180))  # Отрисовка рекорда
+            screen.blit(score_text, (25, 220))  # Отрисовка счета
             pygame.display.update()
 
     # Выход из игры
-    save(area, score, x, y, x_mat, y_mat, highscore, lives, level)  # Сохранение
+    save(area, score, x, y, x_mat, y_mat, highscore, lives, level, points)  # Сохранение
     pygame.quit()
     sys.exit()
 
