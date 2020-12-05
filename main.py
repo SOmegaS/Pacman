@@ -619,6 +619,7 @@ def main():
             if max_points_on_level[level-1] == points:
                 game_result_text = "   Victory "
                 game_status = 2
+                vector = [False, False, False, False]
             #print(points)
         # Экран Game Over/You Win
         if game_status == 2:
