@@ -555,7 +555,7 @@ def main():
                     # Обработка старта новый игры
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 340) & (mouse_y <= 380):
                         game_status = 1  # Смена статуса на 1 - экран игры
-                        area, score, x, y, x_mat, y_mat, lives = reset_area()  # Перезапуск карты
+                        area, score, x, y, x_mat, y_mat, lives = reset_area(level)  # Перезапуск карты
                         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
 
             # Отрисовка
