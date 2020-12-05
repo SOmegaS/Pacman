@@ -43,7 +43,23 @@ class Ghost:
 
     def move(self, pX, pY, area, end, eating):
         self.vector = [False, False, False, False]
+
+        # рассчет расстояния до пакмана
+        dests = [-1] * 4
+        if area[self.y_mat][self.x_mat - 1] != 3:
+            dests[0] = math.sqrt((self.x_mat - 1 - pX) ** 2 + (self.y_mat - pY) ** 2)
+        # вправо
+        if area[self.y_mat][self.x_mat + 1] != 3:
+            dests[1] = math.sqrt((self.x_mat + 1 - pX) ** 2 + (self.y_mat - pY) ** 2)
+        # вверх
+        if area[self.y_mat - 1][self.x_mat] != 3:
+            dests[2] = math.sqrt((self.x_mat - pX) ** 2 + (self.y_mat - 1 - pY) ** 2)
+        # вниз
+        if area[self.y_mat + 1][self.x_mat] != 3:
+            dests[3] = math.sqrt((self.x_mat - pX) ** 2 + (self.y_mat + 1 - pY) ** 2)
+
         if not eating:
+            Vector = 20
             if end - self.start <= 5:
                 step = random.randint(0, 3)
                 if step == 0:  # влево
@@ -60,32 +76,24 @@ class Ghost:
                         self.vector[step] = True
 
             if (end - self.start <= 12) and (end - self.start > 5):
-                dests = [-1]*4
-                minVector = 20
-                minimum = 100000
-                # влево
-                if area[self.y_mat][self.x_mat-1] != 3:
-                    dests[0] = math.sqrt((self.x_mat-1-pX)**2+(self.y_mat-pY)**2)
-                # вправо
-                if area[self.y_mat][self.x_mat+1] != 3:
-                    dests[1] = math.sqrt((self.x_mat+1-pX)**2+(self.y_mat-pY)**2)
-                # вверх
-                if area[self.y_mat-1][self.x_mat] != 3:
-                    dests[2] = math.sqrt((self.x_mat-pX)**2+(self.y_mat-1-pY)**2)
-                # вниз
-                if area[self.y_mat+1][self.x_mat] != 3:
-                    dests[3] = math.sqrt((self.x_mat-pX)**2+(self.y_mat+1-pY)**2)
-
+                min = 100000
                 for d in range(0, 4):
-                    if (dests[d] <= minimum) and (dests[d] != -1):
-                        minimum = dests[d]
-                        minVector = d
-                self.vector[minVector] = True
+                    if (dests[d] <= min) and (dests[d] != -1):
+                        min = dests[d]
+                        Vector = d
+                self.vector[Vector] = True
 
             if end - self.start > 12:
                 self.start = time.monotonic()
         if eating:
-            pass
+            Vector = 20
+            max = -1
+            for d in range(0, 4):
+                if (dests[d] >= max) and (dests[d] != -1):
+                    max = dests[d]
+                    Vector = d
+            self.vector[Vector] = True
+
 
         if self.vector[0]:
             self.x_mat -= 1
@@ -95,6 +103,7 @@ class Ghost:
             self.y_mat -= 1
         if self.vector[3]:
             self.y_mat += 1
+
 
     def move_mat(self, x, y):
         self.x += x
@@ -269,6 +278,7 @@ def main():
         ghosts = [Ghost(RED, 9, 10), Ghost(YELLOW, 9, 11), Ghost(GREEN, 8, 11),
                   Ghost(ORANGE, 10, 11)]
     # Продолжить игру
+
 
     FPS = 60  # Кадры в секунду
     clock = pygame.time.Clock()
@@ -503,8 +513,8 @@ def main():
                         for i in ghosts:  # возврат всех призраков
                             i.setKilled()
                     if eating:
-                        score += 50
-                        g.setKilled()  # возврат съеденного призрака
+                        score += 150
+                        g.setKilled() # возврат съеденного призрака
             # Отрисовка
             screen.fill((0, 0, 0))
             for i in range(win_height_cell):
@@ -529,7 +539,7 @@ def main():
                             q += 1
                         if eating:
                             # Отрисовка призраков
-                            if tickbig % 35 >= 12:
+                            if (tickbig % 35 >= 12):
                                 screen.blit(image['ghost_scared'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
                                 q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
@@ -548,9 +558,8 @@ def main():
                 screen.blit(image['pacman_right'], (x - 10, y - 10))
 
             f2 = pygame.font.Font("font.ttf", 20)  # Объявление шрифта
-            score_text = f2.render("Score   " + str(score), False, (255, 255, 255))  # Текст текущего счета
-            highscore_text = f2.render("Highscore   " + str(highscore), False,
-                                       (255, 255, 255))  # Текст рекордного счета
+            score_text = f2.render("Score   " + str(score), False, (255, 255, 255))   # Текст текущего счета
+            highscore_text = f2.render("Highscore   " + str(highscore), False, (255, 255, 255))  # Текст рекордного счета
             live_text = f2.render("Lives   " + str(lives), False, (230, 230, 255))  # Текст количестка жизней
             screen.blit(score_text, (265, 0))  # Вывод текущих очков
             screen.blit(highscore_text, (20, 0))  # Вывод рекорда
@@ -567,7 +576,7 @@ def main():
                 image['restart'].set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
                 screen.blit(image['restart'], (250, 200))  # Отрисовка кнопки сброса
                 image['pause'].set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
-                screen.blit(image['pause'], (100, 200))  # Отрисовка кнопки паузы
+                screen.blit(image['pause'], (100, 200))    # Отрисовка кнопки паузы
                 image['restart'].set_colorkey((0, 0, 0))  # Загрузка картинки без чёрного фона
                 if volume_on:
                     screen.blit(image['volume_on'], (30, 20))  # Отрисовка кнопки звука (вкл.)
@@ -587,18 +596,16 @@ def main():
                     if (mouse_x >= 100) & (mouse_x <= 290) & (mouse_y >= 340) & (mouse_y <= 380):
                         game_status = 1  # Смена статуса на 1 - экран игры
                         area, score, x, y, x_mat, y_mat, lives = reset_area(level)  # Перезапуск карты
-                        ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
-                                  Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
+                        ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12), Ghost(ORANGE, 10, 12)]  # Перенос призраков на их стартовые места
 
             # Отрисовка
             screen.fill((0, 0, 0))
-            pygame.draw.rect(screen, (0, 255, 0), (100, 340, 190, 40))  # Кнопка рестарта
+            pygame.draw.rect(screen, (0, 255, 0), (100, 340, 190, 40)) # Кнопка рестарта
             f1 = pygame.font.Font("font.ttf", 70)  # Объявление шрифта
             f2 = pygame.font.Font("font.ttf", 40)  # Объявление шрифта
             restart_text = f2.render("New game   ", False, (255, 255, 255))  # Текст на кнопке рестарта
             gameover_text = f1.render("Game Over   ", False, (255, 0, 0))  # Текст Game Over
-            highscore_text = f2.render("Highscore       " + str(highscore), False,
-                                       (190, 235, 255))  # Текст рекордного счета
+            highscore_text = f2.render("Highscore       " + str(highscore), False, (190, 235, 255))  # Текст рекордного счета
             score_text = f2.render("Score                         " + str(score), False, (190, 235, 255))  # Текст счета
             screen.blit(restart_text, (115, 341))  # Отрисовка текста рестарт
             screen.blit(gameover_text, (30, 60))  # Отрисовка текста завершения игры
@@ -614,3 +621,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
