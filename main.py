@@ -628,6 +628,7 @@ def main():
                 elif level == 2:
                     game_result_text = "   Victory "
                     game_status = 2
+                vector = [False, False, False, False]
 
             #print(points)
         # Экран Game Over/You Win
