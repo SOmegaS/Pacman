@@ -480,7 +480,6 @@ def main():
                     if eating :
                         score += 400
                         time.sleep(1)
-                        eating = 0
                         g.setKilled() # возврат съеденного призрака
             # Отрисовка
             screen.fill((0, 0, 0))
@@ -504,7 +503,7 @@ def main():
                             # Отрисовка призраков
                             screen.blit(image['ghost'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
                             q += 1
-                        if  eating:
+                        if eating:
                             # Отрисовка призраков
                             if (tickbig % 35 >= 12):
                                 screen.blit(image['ghost_scared'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
