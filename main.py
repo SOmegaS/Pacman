@@ -1,5 +1,4 @@
 import sys
-import random
 import pygame
 import time
 import math
@@ -11,6 +10,8 @@ class Ghost:
         self.y = 10 + 20 * y
         self.x_mat = x
         self.y_mat = y
+        self.base_x = x
+        self.base_y = y
         self.vector = [False, False, False, False]
 
     def get_x(self):
@@ -18,6 +19,12 @@ class Ghost:
 
     def get_y(self):
         return self.y
+
+    def setKilled(self):
+        self.x = 10 + 20 * self.base_x
+        self.y = 10 + 20 * self.base_y
+        self.x_mat = self.base_x
+        self.y_mat = self.base_y
 
     def get_xmat(self):
         return self.x_mat
@@ -461,20 +468,18 @@ def main():
                 if (g.get_x() == (x_mat + 1) * 20 - 10) & (g.get_y() == (y_mat + 1) * 20 - 10):
                     if not eating :
                         lives, game_status = ghosts[1].killPacman(lives, game_status)
-                        killed = True
                         time.sleep(1)
-                        killed = False
                         x_mat = 1
                         y_mat = 1
                         x = 30
                         y = 30
                         vector = [False, False, False, False]
                     if eating :
-                        #здесь нужно переместить призрака в стартовую позицию
                         score += 400
-                        g.x = 9
-                        g.y = 11
+                        time.sleep(1)
                         eating = 0
+                    for i in ghosts:
+                        i.setKilled() #здесь нужно переместить призрака в стартовую позицию
             # Отрисовка
             screen.fill((0, 0, 0))
             for i in range(win_height_cell):
