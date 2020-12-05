@@ -615,7 +615,7 @@ def main():
                     screen.blit(image['volume_off'], (30, 20))  # Отрисовка кнопки звука (выкл.)
             pygame.display.update()
             # Победа
-            if max_points_on_level[level] == points:
+            if max_points_on_level[level-1] == points:
                 game_result_text = "   Victory "
                 game_status = 2
             #print(points)
