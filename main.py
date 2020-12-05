@@ -271,7 +271,7 @@ def play_music(run):  # Проигрывание музыки
     while run[0]:
         if timer == music_time:
             timer = 0
-            pygame.mixer.music.load('music/Arstotzkian_anthem.mp3')  # Добавление в очередь файлов с музыкой
+            pygame.mixer.music.load('music/Arstotzkian_anthem.ogg')  # Добавление в очередь файлов с музыкой
             pygame.mixer.music.play()  # Проигрывание плейлиста
         timer += 1
         time.sleep(1)
@@ -291,13 +291,7 @@ def main():
     area, score, x, y, x_mat, y_mat, highscore, lives, level, points = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
-    max_points_on_level = [196,218]
-    sum = 0
-    for i in range(25):
-        for j in range(19):
-            if area[i][j]==5 or area[i][j]==6:
-                sum += 1
-    print(sum)
+    max_points_on_level = [196, 221]
     # массив призраков
     if level == 1:
         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
@@ -340,6 +334,7 @@ def main():
         'ghost_scared': pygame.image.load('images/ghost.gif'),  # Загрузка изображения призрака
         'big_seed': pygame.image.load('images/big_seed.png')  # Загрузка большого зерна-снежинки
     }
+    game_result_text = 'Game Over'
     # Главный цикл
     while run[0]:
         tickbig += 1
@@ -624,7 +619,7 @@ def main():
             if max_points_on_level[level-1] == points:
                 game_result_text = "   Victory "
                 game_status = 2
-                vector = [False, False, False, False]
+            #print(points)
         # Экран Game Over/You Win
         if game_status == 2:
             lives = 3
