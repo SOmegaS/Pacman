@@ -276,7 +276,8 @@ def main():
         'pacman_left': pygame.image.load('images/pacman_left.gif'),
         'pacman_up': pygame.image.load('images/pacman_up.gif'),
         'pacman_down': pygame.image.load('images/pacman_down.gif'),
-        'ghost': pygame.image.load('images/ghost.gif')  # Загрузка изображения призрака
+        'ghost': pygame.image.load('images/angry.gif'),  # Загрузка изображения призрака
+        'ghost_scared': pygame.image.load('images/ghost.gif')  # Загрузка изображения призрака
     }
     # Главный цикл
     while run:
@@ -474,12 +475,13 @@ def main():
                         x = 30
                         y = 30
                         vector = [False, False, False, False]
+                        for i in ghosts: # возврат всех призраков
+                            i.setKilled()
                     if eating :
                         score += 400
                         time.sleep(1)
                         eating = 0
-                    for i in ghosts:
-                        i.setKilled() #здесь нужно переместить призрака в стартовую позицию
+                        g.setKilled() # возврат съеденного призрака
             # Отрисовка
             screen.fill((0, 0, 0))
             for i in range(win_height_cell):
@@ -505,7 +507,7 @@ def main():
                         if  eating:
                             # Отрисовка призраков
                             if (tickbig % 35 >= 12):
-                                screen.blit(image['ghost'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
+                                screen.blit(image['ghost_scared'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
                                 q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
                         pygame.draw.circle(screen, (255, 240, 220), (10 + 20 * j, 10 + 20 * i), 3)
