@@ -3,6 +3,7 @@ import pygame
 import time
 import math
 import random
+import threading
 
 
 class Ghost:
@@ -94,7 +95,6 @@ class Ghost:
                     Vector = d
             self.vector[Vector] = True
 
-
         if self.vector[0]:
             self.x_mat -= 1
         if self.vector[1]:
@@ -103,7 +103,6 @@ class Ghost:
             self.y_mat -= 1
         if self.vector[3]:
             self.y_mat += 1
-
 
     def move_mat(self, x, y):
         self.x += x
@@ -134,7 +133,7 @@ def save(area, score, x, y, x_mat, y_mat, highscore, lives, level, points):  # �
     f.write(str(lives) + '\n')  # Запись жизней
     f.write(str(level) + '\n')  # Запись level
     f.write(str(points) + '\n')
-
+    f.close()
 
 def reset_area(level):
     if level == 1:
@@ -265,8 +264,24 @@ YELLOW = 251, 255, 0
 GREEN = 0, 255, 0
 game_result_text = "Game Over"
 
+def play_music(run):  # Проигрывание музыки
+    timer = 105
+    music_time = 105  # Ждать столько, СКОЛЬКО ИДЕТ ВСЯ МУЗЫКА В СУММЕ в секундах
+    while run[0]:
+        if timer == music_time:
+            timer = 0
+            pygame.mixer.music.load('music/Arstotzkian_anthem.mp3')  # Добавление в очередь файлов с музыкой
+            pygame.mixer.music.play()  # Проигрывание плейлиста
+        timer += 1
+        time.sleep(1)
+
+
 def main():
     pygame.init()
+    run = [True]  # Индикатор состояния игры
+    pygame.mixer.init()
+    music = threading.Thread(target=play_music, args=(run,))
+    music.start()
     len_side_cell = 20  # Длина стороны клетки в пикселях
     win_width_cell = 19  # Количество клеток по ширине окна
     win_height_cell = 25  # Количество клеток по длине окна
@@ -274,7 +289,7 @@ def main():
     pygame.display.set_caption("Pacman")  # Имя окна приложения
     area, score, x, y, x_mat, y_mat, highscore, lives, level, points = init(win_height_cell)
     speed = 2  # Скорость pacman-а
-    run = True  # Индикатор состояния игры
+    #run = True  # Индикатор состояния игры
     game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
     max_points_on_leve = [188,218]
     # массив призраков
@@ -319,7 +334,7 @@ def main():
         'ghost_scared': pygame.image.load('images/ghost.gif')  # Загрузка изображения призрака
     }
     # Главный цикл
-    while run:
+    while run[0]:
         tickbig += 1
         if eating:
             eattime += 1
@@ -329,7 +344,7 @@ def main():
         if game_status == 0:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Закрытие программы
-                    run = False
+                    run[0] = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
                     # Старт новой игры
@@ -372,7 +387,7 @@ def main():
             # Отлавливание событий
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    run = False
+                    run[0] = False
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
@@ -435,9 +450,7 @@ def main():
                         points += 1
                         area[y_mat][x_mat] = 0
                         eating = True
-
                 if keys[pygame.K_d]:  # Вправо
-
                     if (x_mat == 17) & (y_mat == 12):  # Проверка на телепорт
                         x_mat = 1
                         x -= 16 * len_side_cell
@@ -527,7 +540,7 @@ def main():
                             i.setKilled()
                     if eating:
                         score += 150
-                        g.setKilled() # возврат съеденного призрака
+                        g.setKilled()  # возврат съеденного призрака
             # Отрисовка
             screen.fill((0, 0, 0))
             for i in range(win_height_cell):
@@ -552,7 +565,7 @@ def main():
                             q += 1
                         if eating:
                             # Отрисовка призраков
-                            if (tickbig % 35 >= 12):
+                            if tickbig % 35 >= 12:
                                 screen.blit(image['ghost_scared'], (ghosts[q].get_x() - 10, ghosts[q].get_y() - 10))
                                 q += 1
                     if area[i][j] == 5:  # Отрисовка зерен
@@ -606,7 +619,7 @@ def main():
             lives = 3
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:  # Закрытие программы
-                    run = False
+                    run[0] = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
                     # Обработка старта новый игры
@@ -629,7 +642,6 @@ def main():
             screen.blit(highscore_text, (25, 180))  # Отрисовка рекорда
             screen.blit(score_text, (25, 220))  # Отрисовка счета
             pygame.display.update()
-
     # Выход из игры
     save(area, score, x, y, x_mat, y_mat, highscore, lives, level, points)  # Сохранение
     pygame.quit()
@@ -638,4 +650,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
