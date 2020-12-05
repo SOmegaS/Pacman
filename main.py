@@ -291,7 +291,7 @@ def main():
     area, score, x, y, x_mat, y_mat, highscore, lives, level, points = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
-    max_points_on_level = [196,218]
+    max_points_on_level = [196, 221]
     # массив призраков
     if level == 1:
         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
@@ -615,17 +615,9 @@ def main():
                     screen.blit(image['volume_off'], (30, 20))  # Отрисовка кнопки звука (выкл.)
             pygame.display.update()
             # Победа
-            print(points)
             if max_points_on_level[level-1] == points:
-                if level == 1:
-                    last_score = score
-                    level = 2
-                    reset_area(level)
-                    score = last_score
-                elif level == 2:
-                    level = 1
-                    game_result_text = "   Victory "
-                    game_status = 2
+                game_result_text = "   Victory "
+                game_status = 2
             #print(points)
         # Экран Game Over/You Win
         if game_status == 2:
