@@ -291,7 +291,7 @@ def main():
     area, score, x, y, x_mat, y_mat, highscore, lives, level, points = init(win_height_cell)
     speed = 2  # Скорость pacman-а
     game_status = 0  # состояния игры : 0 - стартовое меню, 1 - игра, 2 - смерть, любое другое число выхол из программы
-    max_points_on_level = [188,218]
+    max_points_on_level = [196, 221]
     # массив призраков
     if level == 1:
         ghosts = [Ghost(RED, 9, 11), Ghost(YELLOW, 9, 12), Ghost(GREEN, 8, 12),
@@ -334,6 +334,7 @@ def main():
         'ghost_scared': pygame.image.load('images/ghost.gif'),  # Загрузка изображения призрака
         'big_seed': pygame.image.load('images/big_seed.png')  # Загрузка большого зерна-снежинки
     }
+    game_result_text = 'Game Over'
     # Главный цикл
     while run[0]:
         tickbig += 1
